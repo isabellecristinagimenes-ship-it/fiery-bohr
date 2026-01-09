@@ -81,6 +81,7 @@ class SheetsService {
       telefone: leadData.telefone,
       etapa_atual: leadData.etapa_atual || 'Novo Lead',
       imovel: leadData.imovel || '',
+      tipo_de_imovel: leadData.tipo_de_imovel || '',
       valor_do_imovel: leadData.valor_do_imovel || '',
       corretor: leadData.corretor || '',
       origem: leadData.origem || 'Manual',

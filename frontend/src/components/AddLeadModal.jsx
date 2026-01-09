@@ -91,30 +91,59 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, apiUrl }) => {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Imóvel (Ref)</label>
-                            <input
-                                name="imovel"
-                                value={formData.imovel}
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Tipo de Imóvel</label>
+                            <select
+                                name="tipo_de_imovel"
+                                value={formData.tipo_de_imovel || ''}
                                 onChange={handleChange}
                                 style={{
                                     width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
                                     border: '1px solid #374151', background: '#111827', color: 'white'
                                 }}
-                            />
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="Apartamento">Apartamento</option>
+                                <option value="Casa">Casa</option>
+                                <option value="Terreno">Terreno</option>
+                                <option value="Chácara / Sítio">Chácara / Sítio</option>
+                                <option value="Comercial">Comercial</option>
+                            </select>
                         </div>
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Valor (R$)</label>
-                            <input
+                            <select
                                 name="valor_do_imovel"
-                                type="number"
                                 value={formData.valor_do_imovel}
                                 onChange={handleChange}
                                 style={{
                                     width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
                                     border: '1px solid #374151', background: '#111827', color: 'white'
                                 }}
-                            />
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="Até R$ 100 mil">Até R$ 100 mil</option>
+                                <option value="R$ 100 mil – R$ 200 mil">R$ 100 mil – R$ 200 mil</option>
+                                <option value="R$ 200 mil – R$ 300 mil">R$ 200 mil – R$ 300 mil</option>
+                                <option value="R$ 300 mil – R$ 500 mil">R$ 300 mil – R$ 500 mil</option>
+                                <option value="R$ 500 mil – R$ 800 mil">R$ 500 mil – R$ 800 mil</option>
+                                <option value="R$ 800 mil – R$ 1,2 milhão">R$ 800 mil – R$ 1,2 milhão</option>
+                                <option value="Mais de R$ 1,2 milhão">Mais de R$ 1,2 milhão</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Imóvel (Ref/Obs)</label>
+                        <input
+                            name="imovel"
+                            value={formData.imovel}
+                            onChange={handleChange}
+                            placeholder="Ex: Ed. Solar, Apt 42"
+                            style={{
+                                width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
+                                border: '1px solid #374151', background: '#111827', color: 'white'
+                            }}
+                        />
                     </div>
 
                     <button

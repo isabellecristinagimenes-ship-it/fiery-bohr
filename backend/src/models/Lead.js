@@ -23,8 +23,12 @@ const Lead = sequelize.define('Lead', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    tipo_de_imovel: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     valor_do_imovel: {
-        type: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.STRING, // Changed to STRING to support ranges (e.g. "100k - 200k")
         allowNull: true
     },
     corretor: {
