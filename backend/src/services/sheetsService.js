@@ -1,6 +1,5 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { JWT } = require('google-auth-library');
-const crypto = require('crypto');
 
 class SheetsService {
   constructor() {
@@ -37,22 +36,6 @@ class SheetsService {
         privateKey = privateKey.replace(/\\n/g, '\n');
       }
     }
-
-    console.log('Cleaned key length:', privateKey ? privateKey.length : 0);
-    console.log('Starts with:', privateKey ? privateKey.substring(0, 30) : 'null');
-    console.log('Ends with:', privateKey ? privateKey.substring(privateKey.length - 30) : 'null');
-    console.log('NODE_OPTIONS:', process.env.NODE_OPTIONS);
-
-    try {
-      const { getProviders } = crypto;
-      if (getProviders) {
-        const providers = getProviders();
-        console.log('OpenSSL Providers:', JSON.stringify(providers));
-      }
-    } catch (e) {
-      console.log('Could not check crypto providers:', e.message);
-    }
-    console.log('------------------------');
 
     const serviceAccountAuth = new JWT({
       email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
