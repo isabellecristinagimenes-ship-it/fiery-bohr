@@ -14,7 +14,17 @@ class SheetsService {
     }
 
     // Tratamento de quebra de linha para chaves privadas (comum dar erro em deploys)
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
+    let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+
+    // Ensure the key is correctly formatted with newlines
+    if (privateKey.includes('\\n')) {
+      privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+
+    // Remove extra quotes if present
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.substring(1, privateKey.length - 1);
+    }
 
     const serviceAccountAuth = new JWT({
       email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
