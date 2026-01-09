@@ -4,5 +4,6 @@ const metricsController = require('../controllers/metricsController');
 
 router.get('/overview', (req, res) => metricsController.getOverview(req, res));
 router.get('/leads', (req, res) => metricsController.getLeads(req, res));
+router.post('/leads', (req, res) => metricsController.createLead(req, res));
 
 module.exports = router;

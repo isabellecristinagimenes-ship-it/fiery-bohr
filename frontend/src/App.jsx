@@ -6,18 +6,21 @@ import {
   FileText,
   XOctagon,
   LayoutDashboard,
-  RefreshCcw,
   MessageSquare,
-  ChevronRight
+  ChevronRight,
+  RefreshCw,
+  Plus
 } from 'lucide-react';
+import AddLeadModal from './components/AddLeadModal';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 function App() {
   const [metrics, setMetrics] = useState(null);
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -60,31 +63,24 @@ function App() {
 
   return (
     <div className="dashboard-container">
-      <header>
+      <header className="header">
         <div>
-          <h1>Imobiliária CRM</h1>
-          <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Painel de Performance em Tempo Real</p>
+          <h1 className="title">Imobiliária CRM</h1>
+          <p className="subtitle">Painel de Performance em Tempo Real</p>
         </div>
-        <button
-          onClick={fetchData}
-          disabled={loading}
-          style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            color: 'var(--text-main)',
-            padding: '0.75rem 1.25rem',
-            borderRadius: '0.75rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontWeight: 500,
-            backdropFilter: 'var(--glass)'
-          }}
-        >
-          <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
-          {loading ? 'Atualizando...' : 'Atualizar'}
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button
+            className="refresh-button"
+            onClick={() => setIsModalOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#4F46E5', border: '1px solid #4338ca' }}
+          >
+            <Plus size={16} /> Novo Lead
+          </button>
+          <button className="refresh-button" onClick={fetchData} disabled={loading}>
+            <RefreshCw size={16} className={loading ? 'spin' : ''} />
+            {loading ? 'Atualizando...' : 'Atualizar'}
+          </button>
+        </div>
       </header>
 
       {error && (
@@ -136,13 +132,15 @@ function App() {
           </div>
 
           <div className="kanban-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <LayoutDashboard size={24} color="var(--primary)" />
-                <h2 style={{ fontSize: '1.5rem' }}>Pipeline de Vendas</h2>
+            <h2 className="section-title">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '24px', height: '24px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '12px', height: '12px', border: '2px solid #6366f1', borderRadius: '3px' }}></div>
+                </div>
+                Pipeline de Vendas
               </div>
-              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Mover leads (Em breve)</span>
-            </div>
+              <span style={{ fontSize: '0.875rem', fontWeight: 400, color: 'var(--text-muted)' }}>Mover leads (Em breve)</span>
+            </h2>
 
             <div className="kanban-grid">
               {stages.map((stage) => (
@@ -198,6 +196,13 @@ function App() {
           </div>
         </>
       )}
+
+      <AddLeadModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchData}
+        apiUrl={API_URL}
+      />
     </div>
   );
 }

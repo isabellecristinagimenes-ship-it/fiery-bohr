@@ -40,7 +40,7 @@ class SheetsService {
     const serviceAccountAuth = new JWT({
       email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       key: privateKey,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID, serviceAccountAuth);
@@ -67,6 +67,26 @@ class SheetsService {
       valor_do_imovel: row.get('valor_do_imovel'),
       tipo_de_imovel: row.get('tipo_de_imovel')
     }));
+  }
+
+  async addLead(leadData) {
+    await this.init();
+    const sheet = this.doc.sheetsByTitle['leads'];
+    if (!sheet) throw new Error('Aba "leads" não encontrada na planilha.');
+
+    // Map internal field names to Sheet headers
+    // Assuming Sheet Headers: nome_do_lead, telefone, etapa_atual, imovel, valor_do_imovel, corretor, origem, data_entrada
+    const row = await sheet.addRow({
+      nome_do_lead: leadData.nome_do_lead,
+      telefone: leadData.telefone,
+      etapa_atual: leadData.etapa_atual || 'Novo Lead',
+      imovel: leadData.imovel || '',
+      valor_do_imovel: leadData.valor_do_imovel || '',
+      corretor: leadData.corretor || '',
+      origem: leadData.origem || 'Manual',
+      data_entrada: new Date().toISOString().split('T')[0] // YYYY-MM-DD
+    });
+    return row;
   }
 
   async getEvents() {
