@@ -8,8 +8,6 @@ class MetricsController {
       res.json(data);
     } catch (error) {
       console.error('Erro:', error);
-    } catch (error) {
-      console.error('Erro:', error);
       res.status(500).json({ error: error.message || 'Erro interno' });
     }
   }
