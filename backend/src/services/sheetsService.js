@@ -17,30 +17,40 @@ class SheetsService {
     // Tratamento de quebra de linha para chaves privadas (comum dar erro em deploys)
     let privateKey = process.env.GOOGLE_PRIVATE_KEY;
 
-    // Ensure the key is correctly formatted with newlines
-    if (privateKey.includes('\\n')) {
-      privateKey = privateKey.replace(/\\n/g, '\n');
-    }
-
-    // Remove extra quotes if present
-    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-      privateKey = privateKey.substring(1, privateKey.length - 1);
-    }
-
     // Diagnostic logs (non-sensitive)
     console.log('--- Auth Diagnostics ---');
     console.log('Node version:', process.version);
-    console.log('Private key length:', privateKey.length);
-    console.log('Private key starts with:', privateKey.substring(0, 25));
-    console.log('Private key ends with:', privateKey.substring(privateKey.length - 25));
+    console.log('Raw key length:', privateKey ? privateKey.length : 0);
+
+    if (privateKey) {
+      privateKey = privateKey.trim();
+      // Remove all leading/trailing quotes
+      while (privateKey.startsWith('"') || privateKey.startsWith("'")) {
+        privateKey = privateKey.substring(1).trim();
+      }
+      while (privateKey.endsWith('"') || privateKey.endsWith("'")) {
+        privateKey = privateKey.substring(0, privateKey.length - 1).trim();
+      }
+
+      // Ensure the key is correctly formatted with newlines
+      if (privateKey.includes('\\n')) {
+        privateKey = privateKey.replace(/\\n/g, '\n');
+      }
+    }
+
+    console.log('Cleaned key length:', privateKey ? privateKey.length : 0);
+    console.log('Starts with:', privateKey ? privateKey.substring(0, 30) : 'null');
+    console.log('Ends with:', privateKey ? privateKey.substring(privateKey.length - 30) : 'null');
     console.log('NODE_OPTIONS:', process.env.NODE_OPTIONS);
+
     try {
       const { getProviders } = crypto;
       if (getProviders) {
-        console.log('OpenSSL Providers:', getProviders());
+        const providers = getProviders();
+        console.log('OpenSSL Providers:', JSON.stringify(providers));
       }
     } catch (e) {
-      console.log('Could not check crypto providers');
+      console.log('Could not check crypto providers:', e.message);
     }
     console.log('------------------------');
 
