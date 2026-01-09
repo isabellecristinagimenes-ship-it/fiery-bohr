@@ -15,26 +15,36 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
   const [metrics, setMetrics] = useState(null);
+  const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchMetrics = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/metrics/overview`);
-      setMetrics(response.data);
+      const [metricsRes, leadsRes] = await Promise.all([
+        axios.get(`${API_URL}/metrics/overview`),
+        axios.get(`${API_URL}/metrics/leads`)
+      ]);
+      setMetrics(metricsRes.data);
+      setLeads(leadsRes.data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching metrics:', err);
-      setError('Erro ao carregar métricas. Verifique se o backend está online.');
+      console.error('Error fetching data:', err);
+      setError('Erro ao carregar dados. Verifique se o backend está online.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMetrics();
+    fetchData();
   }, []);
+
+  const openWhatsApp = (phone) => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/${cleanPhone}`, '_blank');
+  };
 
   const MetricCard = ({ label, value, icon: Icon, color }) => (
     <div className="metric-card">
@@ -46,6 +56,8 @@ function App() {
     </div>
   );
 
+  const stages = ['Novo Lead', 'Qualificação', 'Visita', 'Proposta'];
+
   return (
     <div className="dashboard-container">
       <header>
@@ -54,7 +66,7 @@ function App() {
           <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Painel de Performance em Tempo Real</p>
         </div>
         <button
-          onClick={fetchMetrics}
+          onClick={fetchData}
           disabled={loading}
           style={{
             background: 'var(--bg-card)',
@@ -133,7 +145,7 @@ function App() {
             </div>
 
             <div className="kanban-grid">
-              {['Novo Lead', 'Qualificação', 'Visita', 'Proposta'].map((stage) => (
+              {stages.map((stage) => (
                 <div key={stage} className="kanban-column">
                   <div className="column-header">
                     {stage}
@@ -144,40 +156,42 @@ function App() {
                       borderRadius: '10px',
                       fontSize: '0.75rem'
                     }}>
-                      {metrics?.leads_by_stage?.[stage] || 0}
+                      {leads.filter(l => l.etapa_atual === stage).length}
                     </span>
                   </div>
 
-                  {/* Exemplo de Card de Lead */}
-                  {metrics?.leads_by_stage?.[stage] > 0 && (
-                    <div style={{
+                  {leads.filter(l => l.etapa_atual === stage).map((lead, idx) => (
+                    <div key={idx} style={{
                       background: 'rgba(255,255,255,0.05)',
                       padding: '1rem',
                       borderRadius: '0.75rem',
                       border: '1px solid var(--border)',
                       marginBottom: '1rem'
                     }}>
-                      <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Lead Exemplo</div>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Imóvel: Apartamento Centro</div>
-                      <button style={{
-                        width: '100%',
-                        background: '#25D366',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '0.5rem',
-                        borderRadius: '0.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        cursor: 'pointer',
-                        fontWeight: 600
-                      }}>
+                      <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{lead.nome_do_lead}</div>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Imóvel: {lead.imovel}</div>
+                      <button
+                        onClick={() => openWhatsApp(lead.telefone)}
+                        style={{
+                          width: '100%',
+                          background: '#25D366',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '0.5rem',
+                          borderRadius: '0.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          cursor: 'pointer',
+                          fontWeight: 600
+                        }}
+                      >
                         <MessageSquare size={16} />
                         WhatsApp
                       </button>
                     </div>
-                  )}
+                  ))}
                 </div>
               ))}
             </div>
