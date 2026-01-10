@@ -10,9 +10,11 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     const [formData, setFormData] = useState({
         nome_do_lead: '',
         telefone: '',
-        imovel: '',
+        imovel: '', // Mantendo como "Interesse" ou detalhe
         valor_do_imovel: '',
-        origem: 'Manual'
+        origem: '',
+        outro_origem: '', // Para armazenar o texto digitado quando "Outro" é selecionado
+        tipo_de_imovel: ''
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -31,7 +33,17 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 throw new Error('O nome do lead é obrigatório.');
             }
 
-            await axios.post(`${API_URL}/metrics/leads`, formData);
+            // Prepara os dados para envio
+            const dataToSend = {
+                ...formData,
+                // Se origem for "Outro", usa o valor digitado, senão usa o valor do select
+                origem: formData.origem === 'Outro' ? formData.outro_origem : formData.origem
+            };
+
+            // Remove o campo auxiliar antes de enviar
+            delete dataToSend.outro_origem;
+
+            await axios.post(`${API_URL}/metrics/leads`, dataToSend);
 
             // Reset form and close
             setFormData({
@@ -39,7 +51,9 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 telefone: '',
                 imovel: '',
                 valor_do_imovel: '',
-                origem: 'Manual'
+                origem: '',
+                outro_origem: '',
+                tipo_de_imovel: ''
             });
             onSuccess();
             onClose();
@@ -70,9 +84,11 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 padding: '2rem',
                 borderRadius: '1rem',
                 width: '100%',
-                maxWidth: '500px',
+                maxWidth: '600px', // Aumentei um pouco a largura
                 border: '1px solid var(--border)',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+                boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                maxHeight: '90vh',
+                overflowY: 'auto'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Novo Lead</h2>
@@ -96,27 +112,27 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Nome do Lead *</label>
-                        <input
-                            type="text"
-                            name="nome_do_lead"
-                            value={formData.nome_do_lead}
-                            onChange={handleChange}
-                            placeholder="Ex: João Silva"
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                borderRadius: '0.5rem',
-                                border: '1px solid var(--border)',
-                                background: 'rgba(255,255,255,0.05)',
-                                color: 'var(--text-main)',
-                                fontSize: '1rem'
-                            }}
-                        />
-                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div style={{ gridColumn: 'span 2' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Nome do Lead *</label>
+                            <input
+                                type="text"
+                                name="nome_do_lead"
+                                value={formData.nome_do_lead}
+                                onChange={handleChange}
+                                placeholder="Ex: João Silva"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--border)',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '1rem'
+                                }}
+                            />
+                        </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Telefone</label>
                             <input
@@ -136,30 +152,12 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                 }}
                             />
                         </div>
+
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Valor Imóvel</label>
-                            <input
-                                type="text"
-                                name="valor_do_imovel"
-                                value={formData.valor_do_imovel}
-                                onChange={handleChange}
-                                placeholder="Ex: 500.000"
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem',
-                                    borderRadius: '0.5rem',
-                                    border: '1px solid var(--border)',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    color: 'var(--text-main)',
-                                    fontSize: '1rem'
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Origem</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Tipo de Imóvel</label>
                             <select
-                                name="origem"
-                                value={formData.origem}
+                                name="tipo_de_imovel"
+                                value={formData.tipo_de_imovel}
                                 onChange={handleChange}
                                 style={{
                                     width: '100%',
@@ -171,25 +169,71 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                     fontSize: '1rem'
                                 }}
                             >
-                                <option value="Manual">Manual</option>
-                                <option value="Google">Google</option>
-                                <option value="Instagram">Instagram</option>
-                                <option value="Facebook">Facebook</option>
-                                <option value="Indicação">Indicação</option>
-                                <option value="Portal">Portal</option>
-                                <option value="Outros">Outros</option>
+                                <option value="">Selecione...</option>
+                                <option value="Apartamento">Apartamento</option>
+                                <option value="Casa">Casa</option>
+                                <option value="Terreno">Terreno</option>
+                                <option value="Chácara / Sítio">Chácara / Sítio</option>
+                                <option value="Comercial">Comercial</option>
                             </select>
                         </div>
                     </div>
 
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Valor do Imóvel</label>
+                            <select
+                                name="valor_do_imovel"
+                                value={formData.valor_do_imovel}
+                                onChange={handleChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--border)',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '1rem'
+                                }}
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="Até R$ 100 mil">Até R$ 100 mil</option>
+                                <option value="R$ 100 mil – R$ 200 mil">R$ 100 mil – R$ 200 mil</option>
+                                <option value="R$ 200 mil – R$ 300 mil">R$ 200 mil – R$ 300 mil</option>
+                                <option value="R$ 300 mil – R$ 500 mil">R$ 300 mil – R$ 500 mil</option>
+                                <option value="R$ 500 mil – R$ 800 mil">R$ 500 mil – R$ 800 mil</option>
+                                <option value="R$ 800 mil – R$ 1,2 milhão">R$ 800 mil – R$ 1,2 milhão</option>
+                                <option value="mais de R$ 1,2 milhão">mais de R$ 1,2 milhão</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Detalhes do Interesse</label>
+                            <input
+                                type="text"
+                                name="imovel"
+                                value={formData.imovel}
+                                onChange={handleChange}
+                                placeholder="Ex: Cond. Vista Verde"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--border)',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '1rem'
+                                }}
+                            />
+                        </div>
+                    </div>
+
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Interesse (Imóvel)</label>
-                        <input
-                            type="text"
-                            name="imovel"
-                            value={formData.imovel}
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Origem do Lead</label>
+                        <select
+                            name="origem"
+                            value={formData.origem}
                             onChange={handleChange}
-                            placeholder="Ex: Apto Centro"
                             style={{
                                 width: '100%',
                                 padding: '0.75rem',
@@ -199,7 +243,35 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                 color: 'var(--text-main)',
                                 fontSize: '1rem'
                             }}
-                        />
+                        >
+                            <option value="">Selecione...</option>
+                            <option value="Indicação">Indicação</option>
+                            <option value="Placa / Passante">Placa / Passante</option>
+                            <option value="Cliente antigo">Cliente antigo</option>
+                            <option value="Parceria">Parceria</option>
+                            <option value="Portais imobiliários">Portais imobiliários</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+
+                        {formData.origem === 'Outro' && (
+                            <input
+                                type="text"
+                                name="outro_origem"
+                                value={formData.outro_origem}
+                                onChange={handleChange}
+                                placeholder="Qual a origem?"
+                                style={{
+                                    width: '100%',
+                                    marginTop: '0.5rem',
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--border)',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '1rem'
+                                }}
+                            />
+                        )}
                     </div>
 
                     <button
