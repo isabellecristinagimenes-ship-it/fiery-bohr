@@ -24,6 +24,7 @@ class SheetsService {
     // Diagnostic logs (masked)
     console.log('--- Auth Diagnostics ---');
     console.log('Node version:', process.version);
+    console.log('Email configured:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL); // Log the email to check for typos
     console.log('Key length:', privateKey.length);
     console.log('Key start:', privateKey.substring(0, 20));
     console.log('Key end:', privateKey.substring(privateKey.length - 20));
