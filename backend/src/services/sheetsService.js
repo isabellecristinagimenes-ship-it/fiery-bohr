@@ -41,7 +41,7 @@ class SheetsService {
     }
 
     const serviceAccountAuth = new JWT({
-      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      email: 'backend-leitor@imobiliaria-mvp.iam.gserviceaccount.com', // HARDCODED FIX due to Railway variable issue
       key: privateKey,
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
