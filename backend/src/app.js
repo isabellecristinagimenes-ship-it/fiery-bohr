@@ -5,7 +5,7 @@ const metricsRoutes = require('./routes/metricsRoutes');
 const db = require('./models');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 8080; // Hardcoded to force Railway detection
 
 app.use(cors());
 app.use(express.json());
