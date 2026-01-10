@@ -1,54 +1,51 @@
 import React, { useState } from 'react';
-import { X, Save } from 'lucide-react';
 import axios from 'axios';
+import { X, Save, Loader } from 'lucide-react';
 
-const AddLeadModal = ({ isOpen, onClose, onSuccess, apiUrl }) => {
+const API_URL = import.meta.env.VITE_API_URL;
+
+const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
+    if (!isOpen) return null;
+
     const [formData, setFormData] = useState({
         nome_do_lead: '',
         telefone: '',
         imovel: '',
         valor_do_imovel: '',
-        etapa_atual: 'Novo Lead'
+        origem: 'Manual'
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [isCustomSource, setIsCustomSource] = useState(false);
-
-    if (!isOpen) return null;
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSourceChange = (e) => {
-        const value = e.target.value;
-        if (value === 'Outros') {
-            setIsCustomSource(true);
-            setFormData(prev => ({ ...prev, origem: '' }));
-        } else {
-            setIsCustomSource(false);
-            setFormData(prev => ({ ...prev, origem: value }));
-        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+
         try {
-            await axios.post(`${apiUrl}/metrics/leads`, formData);
-            onSuccess();
-            onClose();
-            setFormData({ // Reset form
+            if (!formData.nome_do_lead) {
+                throw new Error('O nome do lead é obrigatório.');
+            }
+
+            await axios.post(`${API_URL}/metrics/leads`, formData);
+
+            // Reset form and close
+            setFormData({
                 nome_do_lead: '',
                 telefone: '',
                 imovel: '',
                 valor_do_imovel: '',
-                etapa_atual: 'Novo Lead'
+                origem: 'Manual'
             });
+            onSuccess();
+            onClose();
         } catch (err) {
-            console.error(err);
-            setError('Erro ao salvar lead. Tente novamente.');
+            console.error('Erro ao salvar lead:', err);
+            setError(err.response?.data?.error || err.message || 'Erro ao salvar lead.');
         } finally {
             setLoading(false);
         }
@@ -56,153 +53,151 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, apiUrl }) => {
 
     return (
         <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000, backdropFilter: 'blur(5px)'
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            backdropFilter: 'blur(5px)'
         }}>
             <div style={{
-                background: '#1F2937', padding: '2rem', borderRadius: '1rem',
-                width: '100%', maxWidth: '500px', border: '1px solid rgba(255,255,255,0.1)'
+                background: 'var(--bg-card)',
+                padding: '2rem',
+                borderRadius: '1rem',
+                width: '100%',
+                maxWidth: '500px',
+                border: '1px solid var(--border)',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
             }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Novo Lead</h2>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}>
+                    <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                         <X size={24} />
                     </button>
                 </div>
 
-                {error && <div style={{ color: '#EF4444', marginBottom: '1rem', background: 'rgba(239,68,68,0.1)', padding: '0.5rem', borderRadius: '0.25rem' }}>{error}</div>}
+                {error && (
+                    <div style={{
+                        padding: '0.75rem',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                        borderRadius: '0.5rem',
+                        color: '#f87171',
+                        marginBottom: '1rem',
+                        fontSize: '0.875rem'
+                    }}>
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Nome</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Nome do Lead *</label>
                         <input
-                            required
+                            type="text"
                             name="nome_do_lead"
                             value={formData.nome_do_lead}
                             onChange={handleChange}
+                            placeholder="Ex: João Silva"
                             style={{
-                                width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-                                border: '1px solid #374151', background: '#111827', color: 'white'
+                                width: '100%',
+                                padding: '0.75rem',
+                                borderRadius: '0.5rem',
+                                border: '1px solid var(--border)',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'var(--text-main)',
+                                fontSize: '1rem'
                             }}
                         />
                     </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Telefone</label>
-                        <input
-                            required
-                            name="telefone"
-                            placeholder="Ex: 11999999999"
-                            value={formData.telefone}
-                            onChange={handleChange}
-                            style={{
-                                width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-                                border: '1px solid #374151', background: '#111827', color: 'white'
-                            }}
-                        />
-                    </div>
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Tipo de Imóvel</label>
-                            <select
-                                name="tipo_de_imovel"
-                                value={formData.tipo_de_imovel || ''}
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Telefone</label>
+                            <input
+                                type="text"
+                                name="telefone"
+                                value={formData.telefone}
                                 onChange={handleChange}
+                                placeholder="Ex: 11999999999"
                                 style={{
-                                    width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-                                    border: '1px solid #374151', background: '#111827', color: 'white'
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--border)',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '1rem'
                                 }}
-                            >
-                                <option value="">Selecione...</option>
-                                <option value="Apartamento">Apartamento</option>
-                                <option value="Casa">Casa</option>
-                                <option value="Terreno">Terreno</option>
-                                <option value="Chácara / Sítio">Chácara / Sítio</option>
-                                <option value="Comercial">Comercial</option>
-                            </select>
+                            />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Valor (R$)</label>
-                            <select
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Valor Imóvel</label>
+                            <input
+                                type="text"
                                 name="valor_do_imovel"
                                 value={formData.valor_do_imovel}
                                 onChange={handleChange}
+                                placeholder="Ex: 500.000"
                                 style={{
-                                    width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-                                    border: '1px solid #374151', background: '#111827', color: 'white'
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--border)',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '1rem'
                                 }}
-                            >
-                                <option value="">Selecione...</option>
-                                <option value="Até R$ 100 mil">Até R$ 100 mil</option>
-                                <option value="R$ 100 mil – R$ 200 mil">R$ 100 mil – R$ 200 mil</option>
-                                <option value="R$ 200 mil – R$ 300 mil">R$ 200 mil – R$ 300 mil</option>
-                                <option value="R$ 300 mil – R$ 500 mil">R$ 300 mil – R$ 500 mil</option>
-                                <option value="R$ 500 mil – R$ 800 mil">R$ 500 mil – R$ 800 mil</option>
-                                <option value="R$ 800 mil – R$ 1,2 milhão">R$ 800 mil – R$ 1,2 milhão</option>
-                                <option value="Mais de R$ 1,2 milhão">Mais de R$ 1,2 milhão</option>
-                            </select>
+                            />
                         </div>
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Imóvel (Ref/Obs)</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Interesse (Imóvel)</label>
                         <input
+                            type="text"
                             name="imovel"
                             value={formData.imovel}
                             onChange={handleChange}
-                            placeholder="Ex: Ed. Solar, Apt 42"
+                            placeholder="Ex: Apto Centro"
                             style={{
-                                width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-                                border: '1px solid #374151', background: '#111827', color: 'white'
+                                width: '100%',
+                                padding: '0.75rem',
+                                borderRadius: '0.5rem',
+                                border: '1px solid var(--border)',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'var(--text-main)',
+                                fontSize: '1rem'
                             }}
                         />
-                    </div>
-
-                    <div style={{ marginTop: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Origem do Lead</label>
-                        <select
-                            value={isCustomSource ? 'Outros' : formData.origem}
-                            onChange={handleSourceChange}
-                            style={{
-                                width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-                                border: '1px solid #374151', background: '#111827', color: 'white',
-                                marginBottom: isCustomSource ? '0.5rem' : '0'
-                            }}
-                        >
-                            <option value="">Selecione...</option>
-                            <option value="Indicação">Indicação</option>
-                            <option value="Placa / Passante">Placa / Passante</option>
-                            <option value="Cliente antigo">Cliente antigo</option>
-                            <option value="Parceria">Parceria</option>
-                            <option value="Portais imobiliários">Portais imobiliários</option>
-                            <option value="Outros">Outros (Descrever)</option>
-                        </select>
-
-                        {isCustomSource && (
-                            <input
-                                name="origem"
-                                placeholder="Descreva a origem (Ex: Instagram, Facebook...)"
-                                value={formData.origem}
-                                onChange={handleChange}
-                                style={{
-                                    width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-                                    border: '1px solid #374151', background: '#111827', color: 'white'
-                                }}
-                            />
-                        )}
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
                         style={{
-                            marginTop: '1.5rem',
-                            background: '#6366f1', color: 'white', border: 'none', padding: '0.75rem',
-                            borderRadius: '0.5rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                            marginTop: '1rem',
+                            background: 'var(--primary)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '1rem',
+                            borderRadius: '0.75rem',
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            opacity: loading ? 0.7 : 1
                         }}
                     >
-                        {loading ? 'Salvando...' : <><Save size={18} /> Salvar Lead</>}
+                        {loading ? <Loader className="animate-spin" size={20} /> : <Save size={20} />}
+                        {loading ? 'Salvando...' : 'Cadastrar Lead'}
                     </button>
                 </form>
             </div>
