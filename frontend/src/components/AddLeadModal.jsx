@@ -12,11 +12,23 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, apiUrl }) => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isCustomSource, setIsCustomSource] = useState(false);
 
     if (!isOpen) return null;
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSourceChange = (e) => {
+        const value = e.target.value;
+        if (value === 'Outros') {
+            setIsCustomSource(true);
+            setFormData(prev => ({ ...prev, origem: '' }));
+        } else {
+            setIsCustomSource(false);
+            setFormData(prev => ({ ...prev, origem: value }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -146,11 +158,45 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, apiUrl }) => {
                         />
                     </div>
 
+                    <div style={{ marginTop: '1rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#D1D5DB' }}>Origem do Lead</label>
+                        <select
+                            value={isCustomSource ? 'Outros' : formData.origem}
+                            onChange={handleSourceChange}
+                            style={{
+                                width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
+                                border: '1px solid #374151', background: '#111827', color: 'white',
+                                marginBottom: isCustomSource ? '0.5rem' : '0'
+                            }}
+                        >
+                            <option value="">Selecione...</option>
+                            <option value="Indicação">Indicação</option>
+                            <option value="Placa / Passante">Placa / Passante</option>
+                            <option value="Cliente antigo">Cliente antigo</option>
+                            <option value="Parceria">Parceria</option>
+                            <option value="Portais imobiliários">Portais imobiliários</option>
+                            <option value="Outros">Outros (Descrever)</option>
+                        </select>
+
+                        {isCustomSource && (
+                            <input
+                                name="origem"
+                                placeholder="Descreva a origem (Ex: Instagram, Facebook...)"
+                                value={formData.origem}
+                                onChange={handleChange}
+                                style={{
+                                    width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
+                                    border: '1px solid #374151', background: '#111827', color: 'white'
+                                }}
+                            />
+                        )}
+                    </div>
+
                     <button
                         type="submit"
                         disabled={loading}
                         style={{
-                            marginTop: '1rem',
+                            marginTop: '1.5rem',
                             background: '#6366f1', color: 'white', border: 'none', padding: '0.75rem',
                             borderRadius: '0.5rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
