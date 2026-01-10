@@ -227,6 +227,12 @@ function App() {
           </div>
         </>
       )}
+      {/* Modal de Novo Lead */}
+      <AddLeadModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
     </div>
   );
 }
