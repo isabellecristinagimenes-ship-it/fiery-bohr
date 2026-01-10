@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { X, Save, Loader } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
 console.log('🔌 FE is trying to connect to:', API_URL); // Debug request URL
 
 const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {

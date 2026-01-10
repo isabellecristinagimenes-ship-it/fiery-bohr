@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import AddLeadModal from './components/AddLeadModal';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
 
 function App() {
   const [metrics, setMetrics] = useState(null);
