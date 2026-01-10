@@ -8,19 +8,28 @@ import {
   LayoutDashboard,
   RefreshCcw,
   MessageSquare,
-  ChevronRight,
-  Plus
+  Plus,
+  LogOut
 } from 'lucide-react';
 import AddLeadModal from './components/AddLeadModal';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginPage from './pages/LoginPage';
 
+// Hardcoded backend URL to bypass env var corruption
 const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
 
-function App() {
+function Dashboard() {
+  const { user, logout } = useAuth();
   const [metrics, setMetrics] = useState(null);
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Filter leads based on role
+  const filteredLeads = user?.role === 'admin'
+    ? leads
+    : leads.filter(lead => lead.corretor === user.name); // Simple client-side filter for MVP
 
   const fetchData = async () => {
     setLoading(true);
@@ -70,8 +79,15 @@ function App() {
     <div className="dashboard-container">
       <header>
         <div>
-          <h1>Imobiliária CRM</h1>
-          <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Painel de Performance em Tempo Real</p>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Imobiliária CRM
+            <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '10px', background: 'var(--primary)', color: 'white' }}>
+              {user?.role === 'admin' ? 'ADMIN' : 'CORRETOR'}
+            </span>
+          </h1>
+          <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            Bem-vindo, {user?.name}
+          </p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button
@@ -93,25 +109,45 @@ function App() {
             <Plus size={20} />
             Novo Lead
           </button>
+
           <button
             onClick={fetchData}
             disabled={loading}
+            title="Atualizar"
             style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border)',
               color: 'var(--text-main)',
-              padding: '0.75rem 1.25rem',
+              padding: '0.75rem',
               borderRadius: '0.75rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem',
+              justifyContent: 'center',
               fontWeight: 500,
               backdropFilter: 'var(--glass)'
             }}
           >
             <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
-            {loading ? 'Atualizando...' : 'Atualizar'}
+          </button>
+
+          <button
+            onClick={logout}
+            title="Sair"
+            style={{
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              color: '#ef4444',
+              padding: '0.75rem',
+              borderRadius: '0.75rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 500
+            }}
+          >
+            <LogOut size={16} />
           </button>
         </div>
       </header>
@@ -133,7 +169,7 @@ function App() {
       {loading && !metrics ? (
         <div className="loading">
           <div className="spinner"></div>
-          Carregando dados da planilha...
+          Carregando dados...
         </div>
       ) : (
         <>
@@ -170,7 +206,6 @@ function App() {
                 <LayoutDashboard size={24} color="var(--primary)" />
                 <h2 style={{ fontSize: '1.5rem' }}>Pipeline de Vendas</h2>
               </div>
-              <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Mover leads (Em breve)</span>
             </div>
 
             <div className="kanban-grid">
@@ -185,11 +220,11 @@ function App() {
                       borderRadius: '10px',
                       fontSize: '0.75rem'
                     }}>
-                      {leads.filter(l => l.etapa_atual === stage).length}
+                      {filteredLeads.filter(l => l.etapa_atual === stage).length}
                     </span>
                   </div>
 
-                  {leads.filter(l => l.etapa_atual === stage).map((lead, idx) => (
+                  {filteredLeads.filter(l => l.etapa_atual === stage).map((lead, idx) => (
                     <div key={idx} style={{
                       background: 'rgba(255,255,255,0.05)',
                       padding: '1rem',
@@ -198,7 +233,17 @@ function App() {
                       marginBottom: '1rem'
                     }}>
                       <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{lead.nome_do_lead}</div>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Imóvel: {lead.imovel}</div>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                        Imóvel: {lead.imovel}
+                      </div>
+
+                      {/* Show Corretor Name if Admin */}
+                      {user?.role === 'admin' && (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', marginBottom: '1rem' }}>
+                          👤 {lead.corretor || 'Sem corretor'}
+                        </div>
+                      )}
+
                       <button
                         onClick={() => openWhatsApp(lead.telefone)}
                         style={{
@@ -237,4 +282,24 @@ function App() {
   );
 }
 
-export default App;
+function AppContent() {
+  const { IsAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div className="loading"><div className="spinner"></div></div>;
+  }
+
+  if (!IsAuthenticated) {
+    return <LoginPage />;
+  }
+
+  return <Dashboard />;
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
