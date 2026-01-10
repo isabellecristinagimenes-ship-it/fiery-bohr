@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/metrics', metricsRoutes);
 
-const db = require('./models');
+// const db = require('./models');
 
 app.get('/', (req, res) => res.json({ status: 'ok', port: PORT }));
 
@@ -21,6 +21,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Environment PORT value: ${process.env.PORT}`);
 });
 
+/*
 // Verificação de conexão com o banco (Async)
 db.sequelize.authenticate()
   .then(() => {
@@ -34,6 +35,7 @@ db.sequelize.authenticate()
     console.error('Unable to connect to the database:', err);
     // Do NOT exit process, just log error so app stays up for debugging
   });
+*/
 
 // Global Error Handlers (prevent silent deaths)
 process.on('uncaughtException', (err) => {
