@@ -11,13 +11,6 @@ app.use('/metrics', metricsRoutes);
 
 app.get('/', (req, res) => res.json({ status: 'ok' }));
 
-// Database Init
-const { syncDatabase, testConnection } = require('./models');
-(async () => {
-  await testConnection();
-  await syncDatabase();
-})();
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
