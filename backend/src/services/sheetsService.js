@@ -48,10 +48,19 @@ class SheetsService {
     this.doc = doc;
   }
 
+  _getSheet(title) {
+    let sheet = this.doc.sheetsByTitle[title];
+    if (!sheet) {
+      console.warn(`Aba "${title}" não encontrada. Tentando "Página1" ou primeira aba.`);
+      sheet = this.doc.sheetsByTitle['Página1'] || this.doc.sheetsByTitle['Sheet1'] || this.doc.sheetsByIndex[0];
+    }
+    if (!sheet) throw new Error(`Não foi possível encontrar uma aba válida (tentado: "${title}", "Página1", índice 0).`);
+    return sheet;
+  }
+
   async getLeads() {
     await this.init();
-    const sheet = this.doc.sheetsByTitle['leads'];
-    if (!sheet) throw new Error('Aba "leads" não encontrada na planilha.');
+    const sheet = this._getSheet('leads');
 
     // Ler linhas
     const rows = await sheet.getRows();
@@ -71,8 +80,7 @@ class SheetsService {
 
   async addLead(data) {
     await this.init();
-    const sheet = this.doc.sheetsByTitle['leads'];
-    if (!sheet) throw new Error('Aba "leads" não encontrada na planilha.');
+    const sheet = this._getSheet('leads');
 
     const newLead = {
       nome_do_lead: data.nome_do_lead,
