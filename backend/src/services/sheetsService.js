@@ -69,25 +69,26 @@ class SheetsService {
     }));
   }
 
-  async addLead(leadData) {
+  async addLead(data) {
     await this.init();
     const sheet = this.doc.sheetsByTitle['leads'];
     if (!sheet) throw new Error('Aba "leads" não encontrada na planilha.');
 
-    // Map internal field names to Sheet headers
-    // Assuming Sheet Headers: nome_do_lead, telefone, etapa_atual, imovel, valor_do_imovel, corretor, origem, data_entrada
-    const row = await sheet.addRow({
-      nome_do_lead: leadData.nome_do_lead,
-      telefone: leadData.telefone,
-      etapa_atual: leadData.etapa_atual || 'Novo Lead',
-      imovel: leadData.imovel || '',
-      tipo_de_imovel: leadData.tipo_de_imovel || '',
-      valor_do_imovel: leadData.valor_do_imovel || '',
-      corretor: leadData.corretor || '',
-      origem: leadData.origem || 'Manual',
-      data_entrada: new Date().toISOString().split('T')[0] // YYYY-MM-DD
-    });
-    return row;
+    const newLead = {
+      nome_do_lead: data.nome_do_lead,
+      telefone: data.telefone,
+      data_entrada: data.data_entrada || new Date().toISOString().split('T')[0], // YYYY-MM-DD
+      data_mudancadeetapa: data.data_mudancadeetapa || new Date().toISOString().split('T')[0],
+      etapa_atual: data.etapa_atual || 'Novo Lead',
+      imovel: data.imovel || '',
+      corretor: data.corretor || '',
+      origem: data.origem || 'Manual',
+      valor_do_imovel: data.valor_do_imovel || '',
+      tipo_de_imovel: data.tipo_de_imovel || ''
+    };
+
+    await sheet.addRow(newLead);
+    return newLead;
   }
 
   async getEvents() {

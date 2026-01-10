@@ -22,14 +22,21 @@ class MetricsController {
     }
   }
 
-  async createLead(req, res) {
+  async addLead(req, res) {
     try {
-      const syncService = require('../services/syncService');
-      const result = await syncService.createLead(req.body);
-      res.status(201).json(result);
+      const { nome_do_lead, telefone } = req.body;
+
+      if (!nome_do_lead) {
+        return res.status(400).json({ error: 'Nome do lead é obrigatório' });
+      }
+
+      // TODO: Add stricter validation or sanitization here
+
+      const newLead = await sheetsService.addLead(req.body);
+      res.status(201).json(newLead);
     } catch (error) {
-      console.error('Erro ao criar lead:', error);
-      res.status(500).json({ error: error.message || 'Erro ao criar lead' });
+      console.error('Erro ao adicionar lead:', error);
+      res.status(500).json({ error: error.message || 'Erro ao salvar lead' });
     }
   }
 }
