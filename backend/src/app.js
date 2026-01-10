@@ -5,7 +5,7 @@ const metricsRoutes = require('./routes/metricsRoutes');
 const db = require('./models');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
@@ -21,7 +21,7 @@ app.use('/metrics', metricsRoutes);
 app.get('/', (req, res) => res.json({ status: 'ok', port: PORT }));
 
 // Start server immediately to satisfy health checks
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, () => {
   const address = server.address();
   console.log(`Server running on port ${PORT}`);
   console.log(`Listening on address: ${JSON.stringify(address)}`);
