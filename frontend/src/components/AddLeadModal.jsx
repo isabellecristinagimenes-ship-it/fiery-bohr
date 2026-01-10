@@ -3,6 +3,7 @@ import axios from 'axios';
 import { X, Save, Loader } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
+console.log('🔌 FE is trying to connect to:', API_URL); // Debug request URL
 
 const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     if (!isOpen) return null;
