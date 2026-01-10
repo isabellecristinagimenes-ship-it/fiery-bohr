@@ -16,25 +16,27 @@ class SheetsService {
     // Tratamento de quebra de linha para chaves privadas (comum dar erro em deploys)
     let privateKey = process.env.GOOGLE_PRIVATE_KEY;
 
-    // Diagnostic logs (non-sensitive)
+    if (!privateKey) {
+      console.error('❌ GOOGLE_PRIVATE_KEY está vazia ou indefinida!');
+      throw new Error('GOOGLE_PRIVATE_KEY missing');
+    }
+
+    // Diagnostic logs (masked)
     console.log('--- Auth Diagnostics ---');
     console.log('Node version:', process.version);
-    console.log('Raw key length:', privateKey ? privateKey.length : 0);
+    console.log('Key length:', privateKey.length);
+    console.log('Key start:', privateKey.substring(0, 20));
+    console.log('Key end:', privateKey.substring(privateKey.length - 20));
 
-    if (privateKey) {
-      privateKey = privateKey.trim();
-      // Remove all leading/trailing quotes
-      while (privateKey.startsWith('"') || privateKey.startsWith("'")) {
-        privateKey = privateKey.substring(1).trim();
-      }
-      while (privateKey.endsWith('"') || privateKey.endsWith("'")) {
-        privateKey = privateKey.substring(0, privateKey.length - 1).trim();
-      }
+    // CLEANING LOGIC:
+    // 1. Remove quotes if wrapped
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.slice(1, -1);
+    }
 
-      // Ensure the key is correctly formatted with newlines
-      if (privateKey.includes('\\n')) {
-        privateKey = privateKey.replace(/\\n/g, '\n');
-      }
+    // 2. Handle escaped newlines (e.g. from JSON or copied env vars)
+    if (privateKey.includes('\\n')) {
+      privateKey = privateKey.replace(/\\n/g, '\n');
     }
 
     const serviceAccountAuth = new JWT({
@@ -44,8 +46,18 @@ class SheetsService {
     });
 
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID, serviceAccountAuth);
-    await doc.loadInfo();
-    this.doc = doc;
+
+    try {
+      await doc.loadInfo();
+      console.log('✅ Google Sheets Auth successful. Doc title:', doc.title);
+      this.doc = doc;
+    } catch (err) {
+      console.error('❌ Google Sheets Auth FAILED:', err.message);
+      if (err.response) {
+        console.error('API Error Details:', JSON.stringify(err.response.data, null, 2));
+      }
+      throw err; // Re-throw so the API request fails visibly
+    }
   }
 
   _getSheet(title) {
