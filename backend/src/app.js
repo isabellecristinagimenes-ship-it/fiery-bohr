@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const metricsRoutes = require('./routes/metricsRoutes');
+const authRoutes = require('./routes/authRoutes');
 const db = require('./models');
 
 const app = express();
@@ -10,6 +11,7 @@ const PORT = 8080; // Hardcoded to force Railway detection
 app.use(cors());
 app.use(express.json());
 app.use('/metrics', metricsRoutes);
+app.use('/auth', authRoutes);
 
 app.get('/', (req, res) => res.json({ status: 'ok', service: 'fiery-bohr-backend' }));
 
