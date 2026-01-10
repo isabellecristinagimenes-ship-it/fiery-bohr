@@ -116,7 +116,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                         />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Telefone</label>
                             <input
@@ -154,6 +154,31 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                     fontSize: '1rem'
                                 }}
                             />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Origem</label>
+                            <select
+                                name="origem"
+                                value={formData.origem}
+                                onChange={handleChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--border)',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '1rem'
+                                }}
+                            >
+                                <option value="Manual">Manual</option>
+                                <option value="Google">Google</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="Indicação">Indicação</option>
+                                <option value="Portal">Portal</option>
+                                <option value="Outros">Outros</option>
+                            </select>
                         </div>
                     </div>
 
