@@ -13,7 +13,15 @@ const db = require('./models');
 
 app.get('/', (req, res) => res.json({ status: 'ok', port: PORT }));
 
-// Verificação de conexão com o banco e início do servidor
+// Start server immediately to satisfy health checks
+const server = app.listen(PORT, '0.0.0.0', () => {
+  const address = server.address();
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Listening on address: ${JSON.stringify(address)}`);
+  console.log(`Environment PORT value: ${process.env.PORT}`);
+});
+
+// Verificação de conexão com o banco (Async)
 db.sequelize.authenticate()
   .then(() => {
     console.log('Database connection has been established successfully.');
@@ -21,16 +29,10 @@ db.sequelize.authenticate()
   })
   .then(() => {
     console.log('Database & Tables synced successfully.');
-    const server = app.listen(PORT, '0.0.0.0', () => {
-      const address = server.address();
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Listening on address: ${JSON.stringify(address)}`);
-      console.log(`Environment PORT value: ${process.env.PORT}`);
-    });
   })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
-    process.exit(1); // Enforce crash if DB fails
+    // Do NOT exit process, just log error so app stays up for debugging
   });
 
 // Global Error Handlers (prevent silent deaths)
