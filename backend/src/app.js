@@ -21,7 +21,7 @@ app.use('/metrics', metricsRoutes);
 app.get('/', (req, res) => res.json({ status: 'ok', port: PORT }));
 
 // Start server immediately to satisfy health checks
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   const address = server.address();
   console.log(`Server running on port ${PORT}`);
   console.log(`Listening on address: ${JSON.stringify(address)}`);
