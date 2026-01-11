@@ -12,6 +12,8 @@ import {
   LogOut
 } from 'lucide-react';
 import AddLeadModal from './components/AddLeadModal';
+import BrokerRankingWidget from './components/BrokerRankingWidget';
+import PropertyRankingWidget from './components/PropertyRankingWidget';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 
@@ -206,6 +208,39 @@ function Dashboard() {
               color="#ef4444"
             />
           </div>
+
+          {/* SECTION: ADVANCED ANALYTICS (OWNER ONLY) */}
+          {(user?.role === 'owner' || user?.role === 'admin') && (
+            <div style={{ marginBottom: '3rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <TrendingUp size={24} color="var(--accent-gold)" />
+                  Performance da Agência
+                </h2>
+                <select
+                  value={period}
+                  onChange={(e) => setPeriod(Number(e.target.value))}
+                  style={{
+                    background: 'var(--bg-card)',
+                    color: 'var(--text-main)',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid var(--border)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value={7}>Últimos 7 dias</option>
+                  <option value={30}>Últimos 30 dias</option>
+                  <option value={90}>Últimos 3 meses</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                <BrokerRankingWidget data={brokerRank} loading={loadingRank} />
+                <PropertyRankingWidget data={propRank} loading={loadingRank} />
+              </div>
+            </div>
+          )}
 
           <div className="kanban-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
