@@ -350,7 +350,7 @@ export default function AdminDashboard() {
                 {isCreating && (
                     <div className="animate-fade-in">
                         <h3 style={{ color: 'white', fontSize: '1.5rem', fontFamily: 'var(--font-serif)', marginBottom: '2rem' }}>Cadastrar Nova Imobiliária</h3>
-                        <form onSubmit={handleCreateAgency} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        <form onSubmit={handleCreateAgency} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                             <div>
                                 <label style={styles.label}>Nome da Imobiliária</label>
                                 <input type="text" placeholder="Ex: Imobiliária Elite"
@@ -389,8 +389,8 @@ export default function AdminDashboard() {
                                 />
                             </div>
 
-                            <div style={{ gridColumn: '1/-1', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="button" onClick={() => setIsCreating(false)} style={styles.buttonSecondary}>
+                            <div style={{ gridColumn: '1/-1', display: 'flex', gap: '1rem', marginTop: '1rem', position: 'relative', zIndex: 10 }}>
+                                <button type="button" onClick={() => { setIsCreating(false); setAgencyForm({ agencyName: '', spreadsheetId: '', adminName: '', adminEmail: '', adminPassword: 'mudar123' }); }} style={{ ...styles.buttonSecondary, zIndex: 20 }}>
                                     Cancelar
                                 </button>
                                 <button
@@ -399,7 +399,8 @@ export default function AdminDashboard() {
                                     style={{
                                         ...styles.buttonPrimary,
                                         opacity: status === 'loading' ? 0.7 : 1,
-                                        cursor: status === 'loading' ? 'wait' : 'pointer'
+                                        cursor: status === 'loading' ? 'wait' : 'pointer',
+                                        zIndex: 20
                                     }}
                                 >
                                     {status === 'loading' ? 'Salvando...' : <><Save size={20} /> Salvar e Criar</>}
