@@ -62,10 +62,100 @@ class MetricsController {
         origem: 'Manual'
       });
 
+      // LOG EVENT: CREATED
+      await db.LeadEvent.create({
+        leadId: newLead.id,
+        agencyId,
+        type: 'CREATED',
+        metadata: { corretor }
+      });
+
       res.status(201).json(newLead);
     } catch (error) {
       console.error('Erro ao adicionar lead:', error);
       res.status(500).json({ error: error.message || 'Erro ao salvar lead' });
+    }
+  }
+  // --- ANALYTICS: Broker Ranking ---
+  async getBrokerRanking(req, res) {
+    try {
+      const agencyId = req.headers['x-agency-id'] || req.query.agencyId;
+      const { startDate, endDate } = req.query;
+
+      const events = await db.LeadEvent.findAll({
+        where: {
+          agencyId,
+          createdAt: { [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)] }
+        },
+        include: [{ model: db.Lead, as: 'lead' }]
+      });
+
+      const brokerStats = {};
+
+      events.forEach(event => {
+        const brokerName = event.lead ? event.lead.corretor : 'Unknown';
+        if (!brokerStats[brokerName]) brokerStats[brokerName] = { newLeads: 0, qualified: 0, visits: 0 };
+
+        if (event.type === 'CREATED') brokerStats[brokerName].newLeads++;
+        if (event.type === 'STAGE_CHANGE' && event.metadata?.to === 'Qualificado') brokerStats[brokerName].qualified++;
+        if (event.type === 'VISIT') brokerStats[brokerName].visits++;
+      });
+
+      const ranking = Object.entries(brokerStats)
+        .filter(([_, stats]) => stats.newLeads >= 1)
+        .map(([name, stats]) => {
+          const qualRatio = stats.newLeads > 0 ? (stats.qualified / stats.newLeads) : 0;
+          const visitRatio = stats.qualified > 0 ? (stats.visits / stats.qualified) : 0;
+          const finalScore = (qualRatio * 0.5) + (visitRatio * 0.5);
+          return { name, ...stats, finalScore };
+        })
+        .sort((a, b) => b.finalScore - a.finalScore)
+        .slice(0, 3);
+
+      res.json(ranking);
+    } catch (error) {
+      console.error('Ranking Error:', error);
+      res.status(500).json({ error: 'Erro ao calcular ranking' });
+    }
+  }
+
+  // --- ANALYTICS: Property Ranking ---
+  async getPropertyRanking(req, res) {
+    try {
+      const agencyId = req.headers['x-agency-id'] || req.query.agencyId;
+      const { startDate, endDate } = req.query;
+
+      const events = await db.LeadEvent.findAll({
+        where: {
+          agencyId,
+          createdAt: { [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)] }
+        },
+        include: [{ model: db.Lead, as: 'lead' }]
+      });
+
+      const propStats = {};
+
+      events.forEach(event => {
+        const propName = event.lead ? event.lead.imovel : 'Unknown';
+        if (!propStats[propName]) propStats[propName] = { newLeads: 0, qualified: 0 };
+
+        if (event.type === 'CREATED') propStats[propName].newLeads++;
+        if (event.type === 'STAGE_CHANGE' && event.metadata?.to === 'Qualificado') propStats[propName].qualified++;
+      });
+
+      const ranking = Object.entries(propStats)
+        .filter(([_, stats]) => stats.newLeads >= 10 && stats.qualified >= 5)
+        .map(([name, stats]) => {
+          const qualRatio = stats.newLeads > 0 ? (stats.qualified / stats.newLeads) : 0;
+          return { name, ...stats, qualRatio };
+        })
+        .sort((a, b) => b.qualRatio - a.qualRatio)
+        .slice(0, 3);
+
+      res.json(ranking);
+    } catch (error) {
+      console.error('Prop Ranking Error:', error);
+      res.status(500).json({ error: 'Erro ao calcular ranking imóveis' });
     }
   }
 }
