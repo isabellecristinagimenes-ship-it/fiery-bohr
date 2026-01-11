@@ -7,6 +7,12 @@ import { Shield, Check, AlertTriangle, Users, Settings, Save } from 'lucide-reac
 const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
 
 export default function AdminDashboard() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    
+    // Hardcoded Master Password for this Template (Can be changed in code by owner)
+    const MASTER_PASSWORD = 'admin_mestre_seguro'; 
+
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
     
@@ -24,8 +30,54 @@ export default function AdminDashboard() {
 
     // 1. Fetch the single agency on load
     useEffect(() => {
-        fetchAgencyData();
-    }, []);
+        if (isAuthenticated) {
+            fetchAgencyData();
+        }
+    }, [isAuthenticated]);
+
+    const handleLogin = (e) => {
+        e.preventDefault();
+        if (passwordInput === MASTER_PASSWORD) {
+            setIsAuthenticated(true);
+        } else {
+            alert('Senha Mestre Incorreta');
+        }
+    };
+
+    if (!isAuthenticated) {
+        return (
+            <div className="login-container">
+                <div className="login-box" style={{textAlign: 'center'}}>
+                    <Shield size={48} color="var(--accent-gold)" style={{ margin: '0 auto 1rem' }} />
+                    <h2 style={{color: 'white', marginBottom: '1rem'}}>Acesso Restrito</h2>
+                    <p style={{color: 'var(--text-muted)', marginBottom: '1.5rem'}}>
+                        Esta área é exclusiva para a configuração do sistema.
+                    </p>
+                    <form onSubmit={handleLogin}>
+                        <input 
+                            type="password" 
+                            placeholder="Senha Mestre" 
+                            value={passwordInput}
+                            onChange={e => setPasswordInput(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                marginBottom: '1rem',
+                                borderRadius: '0.5rem',
+                                border: '1px solid var(--border)',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'white'
+                            }}
+                        />
+                        <button type="submit" className="login-button">Acessar Painel</button>
+                    </form>
+                    <div style={{marginTop: '1.5rem'}}>
+                         <a href="/" style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Voltar</a>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const fetchAgencyData = async () => {
         try {
