@@ -57,4 +57,53 @@ router.post('/agencies', async (req, res) => {
     }
 });
 
+        });
+
+    } catch (error) {
+    console.error('Admin Error:', error);
+    res.status(500).json({ error: 'Erro ao criar agência.' });
+}
+});
+
+// List Agencies (For Dropdown)
+router.get('/agencies', async (req, res) => {
+    try {
+        const agencies = await Agency.findAll({
+            attributes: ['id', 'name']
+        });
+        res.json(agencies);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao listar agências' });
+    }
+});
+
+// Create User (Broker/Admin) for Agency
+router.post('/users', async (req, res) => {
+    try {
+        const { name, email, password, role, agencyId } = req.body;
+
+        if (!name || !email || !password || !agencyId) {
+            return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+        }
+
+        const emailExists = await User.findOne({ where: { email } });
+        if (emailExists) {
+            return res.status(400).json({ error: 'Email já cadastrado.' });
+        }
+
+        const newUser = await User.create({
+            name,
+            email,
+            password, // In prod use bcrypt
+            role: role || 'broker',
+            agencyId
+        });
+
+        res.status(201).json(newUser);
+    } catch (error) {
+        console.error('Create User Error:', error);
+        res.status(500).json({ error: 'Erro ao criar usuário.' });
+    }
+});
+
 module.exports = router;
