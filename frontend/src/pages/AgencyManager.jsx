@@ -5,7 +5,7 @@ import { Shield, Check, AlertTriangle, Users, Settings, Save } from 'lucide-reac
 import { API_URL } from '../config';
 
 
-export default function AdminDashboard() {
+export default function AgencyManager() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [passwordInput, setPasswordInput] = useState('');
 
