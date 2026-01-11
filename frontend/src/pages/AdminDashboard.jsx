@@ -183,7 +183,7 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', margin: 0 }}>Super Admin</h1>
-                            <span style={{ fontSize: '0.8rem', color: '#4ade80', background: 'rgba(74, 222, 128, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>Sistema Ativo v2.1</span>
+                            <span style={{ fontSize: '0.8rem', color: '#fbbf24', background: 'rgba(251, 191, 36, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(251, 191, 36, 0.2)' }}>v2.2 PREMIUM</span>
                         </div>
                     </div>
                     {selectedAgency && (
