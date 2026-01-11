@@ -28,7 +28,13 @@ class MetricsController {
 
       let whereClause = {};
       if (agencyId) {
-        whereClause.agencyId = agencyId;
+        // PERMITIR LEADS LEGADOS (agencyId IS NULL) - FIX TEMPORÁRIO
+        whereClause = {
+          [db.Sequelize.Op.or]: [
+            { agencyId: agencyId },
+            { agencyId: null }
+          ]
+        };
       }
 
       // Fetch from DB instead of Sheets for SaaS
