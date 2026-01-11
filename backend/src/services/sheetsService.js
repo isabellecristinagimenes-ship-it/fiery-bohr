@@ -35,23 +35,21 @@ class SheetsService {
       privateKey = privateKey.slice(1, -1);
     }
 
-    // 2. Handle escaped newlines (e.g. from JSON or copied env vars)
-    if (privateKey.includes('\\n')) {
-      privateKey = privateKey.replace(/\\n/g, '\n');
-    }
-
-    const serviceAccountAuth = new JWT({
-      email: 'backend-leitor@imobiliaria-mvp.iam.gserviceaccount.com', // HARDCODED FIX due to Railway variable issue
-      key: privateKey,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    });
-
-    const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID, serviceAccountAuth);
+    console.log('Email configured:', SERVICE_ACCOUNT_EMAIL); // Log the email to check for typos
+    console.log('Key length:', PRIVATE_KEY.length);
+    console.log('Key start:', PRIVATE_KEY.substring(0, 20));
+    console.log('Key end:', PRIVATE_KEY.substring(PRIVATE_KEY.length - 20));
 
     try {
-      await doc.loadInfo();
-      console.log('✅ Google Sheets Auth successful. Doc title:', doc.title);
-      this.doc = doc;
+      const auth = new google.auth.JWT(
+        SERVICE_ACCOUNT_EMAIL,
+        null,
+        PRIVATE_KEY,
+        scopes
+      );
+
+      sheetsClient = google.sheets({ version: 'v4', auth });
+      console.log('✅ Google Sheets Auth successful.');
     } catch (err) {
       console.error('❌ Google Sheets Auth FAILED:', err.message);
       if (err.response) {
@@ -91,25 +89,37 @@ class SheetsService {
     }));
   }
 
-  async addLead(data) {
-    await this.init();
-    const sheet = this._getSheet('leads');
+  async addLead(data, spreadsheetId = DEFAULT_SHEET_ID) {
+    await this.init(); // Ensure sheetsClient is initialized
 
-    const newLead = {
-      nome_do_lead: data.nome_do_lead,
-      telefone: data.telefone,
-      data_entrada: data.data_entrada || new Date().toISOString().split('T')[0], // YYYY-MM-DD
-      data_mudancadeetapa: data.data_mudancadeetapa || new Date().toISOString().split('T')[0],
-      etapa_atual: data.etapa_atual || 'Novo Lead',
-      imovel: data.imovel || '',
-      corretor: data.corretor || '',
-      origem: data.origem || 'Manual',
-      valor_do_imovel: data.valor_do_imovel || '',
-      tipo_de_imovel: data.tipo_de_imovel || ''
-    };
+    try {
+      const values = [
+        [
+          data.data_entrada || new Date().toLocaleDateString('pt-BR'),
+          data.nome_do_lead,
+          data.telefone,
+          data.imovel || 'Interesse Geral', // Detalhes do imóvel
+          data.corretor || 'Sistema',      // Quem atendeu
+          data.etapa_atual || 'Novo'        // Status inicial
+        ]
+      ];
 
-    await sheet.addRow(newLead);
-    return newLead;
+      const response = await this.sheetsClient.spreadsheets.values.append({
+        spreadsheetId,
+        range: 'Página1!A:F', // Assuming 'Página1' and columns A-F for these fields
+        valueInputOption: 'USER_ENTERED',
+        resource: { values },
+      });
+
+      console.log('✅ Lead added successfully via Google Sheets API.');
+      return { ...data, added: true, response: response.data };
+    } catch (error) {
+      console.error('❌ Error adding lead via Google Sheets API:', error.message);
+      if (error.response) {
+        console.error('API Error Details:', JSON.stringify(error.response.data, null, 2));
+      }
+      throw error;
+    }
   }
 
   async getEvents() {

@@ -58,6 +58,18 @@ class MetricsController {
         return res.status(400).json({ error: 'Nome do lead é obrigatório' });
       }
 
+      // Fetch Agency to get custom Spreadsheet ID
+      const agency = await db.Agency.findByPk(agencyId);
+      const customSheetId = agency?.spreadsheetId; // Will be undefined if not set, service handles fallback
+
+      // Add to Google Sheets (Dynamic ID)
+      await sheetsService.addLead({
+        nome_do_lead,
+        telefone,
+        corretor,
+        imovel: 'Interesse Geral'
+      }, customSheetId);
+
       // Create directly in DB for SaaS
       const newLead = await db.Lead.create({
         nome_do_lead,

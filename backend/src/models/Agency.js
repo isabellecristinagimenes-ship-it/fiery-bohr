@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
+        },
+        spreadsheetId: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            comment: 'ID da planilha Google associada a esta agência'
         }
     }, {});
 
