@@ -5,7 +5,7 @@ import { Shield, Check, AlertTriangle } from 'lucide-react';
 // Hardcoded for MVP
 const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
 
-export default function SuperAdminPage() {
+export default function AdminDashboard() {
     const [view, setView] = useState('agency'); // agency | user
     const [status, setStatus] = useState(null);
     const [agencies, setAgencies] = useState([]);
@@ -58,7 +58,7 @@ export default function SuperAdminPage() {
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <Shield size={48} color="var(--accent-gold)" style={{ marginBottom: '1rem' }} />
                     <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', color: 'white' }}>
-                        Super Admin
+                        Super Admin <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>v2.0</span>
                     </h1>
 
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
@@ -111,7 +111,16 @@ export default function SuperAdminPage() {
                 {/* FORM: NEW AGENCY */}
                 {view === 'agency' && (
                     <form onSubmit={handleAgencySubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Provisionar Nova Agência</h3>
+                        <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginTop: '1rem' }}>Dados da Imobiliária</h3>
+
+                        <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '1rem', borderRadius: '0.5rem', fontSize: '0.85rem', color: '#a5b4fc', marginBottom: '1.5rem' }}>
+                            <strong>⚠️ Requisitos da Planilha:</strong>
+                            <ul style={{ paddingLeft: '1.2rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                <li>Deve ser compartilhada como <strong>Editor</strong> com: <br /> <code style={{ userSelect: 'all' }}>leitor@imobiliaria-mvp.iam.gserviceaccount.com</code></li>
+                                <li>Aba deve se chamar: <strong>Página1</strong></li>
+                                <li>Colunas (Ordem exata): <strong>Data, Nome, Telefone, Imóvel, Corretor, Etapa</strong></li>
+                            </ul>
+                        </div>
 
                         <div className="input-group">
                             <label>Nome da Agência</label>
@@ -221,4 +230,3 @@ export default function SuperAdminPage() {
         </div>
     );
 }
-```

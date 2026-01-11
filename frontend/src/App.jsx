@@ -16,8 +16,9 @@ import AddLeadModal from './components/AddLeadModal';
 import BrokerRankingWidget from './components/BrokerRankingWidget';
 import PropertyRankingWidget from './components/PropertyRankingWidget';
 import { AuthProvider, useAuth } from './context/AuthContext';
+// Force Rebuild
 import LoginPage from './pages/LoginPage';
-import SuperAdminPage from './pages/SuperAdminPage';
+import AdminDashboard from './pages/AdminDashboard'; // Renamed for cache bursting
 
 // Hardcoded backend URL to bypass env var corruption
 const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
@@ -338,7 +339,7 @@ function AppContent() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
   if (currentPath === '/super-admin') {
-    return <SuperAdminPage />;
+    return <AdminDashboard />;
   }
 
   if (loading) {

@@ -9,8 +9,8 @@ class SheetsService {
   async init() {
     if (this.doc) return;
 
-    if (!process.env.GOOGLE_SHEETS_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
-      throw new Error('Credenciais do Google Sheets não configuradas (.env).');
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+      throw new Error('Credenciais do Google Sheets (Email/Key) não configuradas.');
     }
 
     // Tratamento de quebra de linha para chaves privadas (comum dar erro em deploys)
