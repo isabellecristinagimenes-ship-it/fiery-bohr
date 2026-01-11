@@ -34,6 +34,14 @@ export default function AgencyManager() {
         }
     }, [isAuthenticated]);
 
+    // PARANOID RESET: Force false on mount
+    useEffect(() => {
+        setIsAuthenticated(false);
+        setIsCreating(false);
+        console.log("AgencyManager MOUNTED - Force Reset");
+    }, []);
+
+
     const fetchAgencies = async () => {
         try {
             const res = await axios.get(`${API_URL}/admin/agencies`);
@@ -232,6 +240,7 @@ export default function AgencyManager() {
             <div style={{ ...styles.card, maxWidth: '420px', textAlign: 'center' }}>
                 <Shield size={64} color="var(--accent-gold)" style={{ margin: '0 auto 1.5rem', filter: 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.3))' }} />
                 <h2 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-serif)', marginBottom: '0.5rem' }}>Acesso Restrito</h2>
+                <div style={{ background: 'red', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', display: 'inline-block', marginBottom: '1rem' }}>v5.0 - FIXED</div>
                 <p style={{ color: '#525252', marginBottom: '2rem' }}>Área exclusiva para configuração do sistema.</p>
                 <form onSubmit={handleLogin}>
                     <input type="password" placeholder="Senha Mestre" value={passwordInput} onChange={e => setPasswordInput(e.target.value)}
@@ -356,7 +365,7 @@ export default function AgencyManager() {
                     <div className="animate-fade-in" style={{ maxWidth: '600px', margin: '0 auto' }}>
                         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                             <div style={{ background: 'var(--accent-gold)', color: 'black', display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                v3.0 - OFFICIAL
+                                v5.0 - FIXED
                             </div>
                             <h3 style={{ color: 'white', fontSize: '1.5rem', fontFamily: 'var(--font-serif)', marginTop: '1rem' }}>
                                 Nova Imobiliária
