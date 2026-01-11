@@ -18,7 +18,8 @@ import PropertyRankingWidget from './components/PropertyRankingWidget';
 import { AuthProvider, useAuth } from './context/AuthContext';
 // Force Rebuild
 import LoginPage from './pages/LoginPage';
-import AgencyManager from './pages/AgencyManager'; // Renamed for cache bursting v3.1
+import MasterAdmin from './pages/MasterAdmin'; // Clean Restart v1.0
+
 
 
 import { API_URL } from './config';
@@ -340,7 +341,8 @@ function AppContent() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
   if (currentPath.includes('/master') || currentPath.includes('/super-admin')) {
-    return <AgencyManager />;
+    return <MasterAdmin />;
+
   }
 
   if (loading) {
