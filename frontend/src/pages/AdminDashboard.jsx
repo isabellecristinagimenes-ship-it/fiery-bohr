@@ -55,10 +55,10 @@ export default function AdminDashboard() {
     return (
         <div className="login-container" style={{ alignItems: 'flex-start', paddingTop: '3rem', overflowY: 'auto' }}>
             <div className="login-box" style={{ maxWidth: '800px', width: '100%' }}>
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <div style={{ textAlign: 'center', marginBottom: '2rem', border: '1px solid var(--accent-gold)', padding: '1rem', borderRadius: '1rem' }}>
                     <Shield size={48} color="var(--accent-gold)" style={{ marginBottom: '1rem' }} />
                     <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', color: 'white' }}>
-                        Super Admin <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>v2.0</span>
+                        Super Admin <span style={{ fontSize: '0.8rem', color: '#4ade80' }}>ATIVO v2.1</span>
                     </h1>
 
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>

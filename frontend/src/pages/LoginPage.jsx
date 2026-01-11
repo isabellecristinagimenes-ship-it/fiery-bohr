@@ -95,6 +95,10 @@ const LoginPage = () => {
                     <p style={{ color: '#525252', fontSize: '0.95rem' }}>
                         Sua gestão imobiliária começa aqui.
                     </p>
+                    <p style={{ marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                        Sistema exclusivo para corretores de alta performance. <br />
+                        <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Versão 2.1 (Deploy Confirmado)</span>
+                    </p>
                 </div>
 
                 {/* Error Message */}
