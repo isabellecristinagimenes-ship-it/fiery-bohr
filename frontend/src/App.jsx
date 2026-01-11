@@ -341,7 +341,7 @@ function AppContent() {
 
   const normalizedPath = currentPath.endsWith('/') && currentPath.length > 1 ? currentPath.slice(0, -1) : currentPath;
 
-  if (normalizedPath === '/super-admin') {
+  if (normalizedPath === '/master' || normalizedPath === '/super-admin') {
     return <AgencyManager />;
   }
 
