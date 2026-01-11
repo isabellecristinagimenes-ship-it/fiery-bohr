@@ -17,6 +17,7 @@ import BrokerRankingWidget from './components/BrokerRankingWidget';
 import PropertyRankingWidget from './components/PropertyRankingWidget';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
+import SuperAdminPage from './pages/SuperAdminPage';
 
 // Hardcoded backend URL to bypass env var corruption
 const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
@@ -334,6 +335,11 @@ function Dashboard() {
 
 function AppContent() {
   const { IsAuthenticated, loading } = useAuth();
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+
+  if (currentPath === '/super-admin') {
+    return <SuperAdminPage />;
+  }
 
   if (loading) {
     return <div className="loading"><div className="spinner"></div></div>;
