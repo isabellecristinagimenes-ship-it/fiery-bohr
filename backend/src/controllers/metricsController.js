@@ -60,7 +60,12 @@ class MetricsController {
 
       // Fetch Agency to get custom Spreadsheet ID
       const agency = await db.Agency.findByPk(agencyId);
-      const customSheetId = agency?.spreadsheetId; // Will be undefined if not set, service handles fallback
+
+      if (!agency || !agency.spreadsheetId) {
+        return res.status(400).json({
+          error: 'CONFIGURAÇÃO INCOMPLETA: Esta agência não tem uma Planilha Google conectada. Por favor, contate o administrador.'
+        });
+      }
 
       // Add to Google Sheets (Dynamic ID)
       await sheetsService.addLead({
@@ -68,7 +73,7 @@ class MetricsController {
         telefone,
         corretor,
         imovel: 'Interesse Geral'
-      }, customSheetId);
+      }, agency.spreadsheetId);
 
       // Create directly in DB for SaaS
       const newLead = await db.Lead.create({

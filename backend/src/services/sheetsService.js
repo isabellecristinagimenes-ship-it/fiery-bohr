@@ -89,7 +89,10 @@ class SheetsService {
     }));
   }
 
-  async addLead(data, spreadsheetId = DEFAULT_SHEET_ID) {
+  async addLead(data, spreadsheetId) {
+    if (!spreadsheetId) {
+      throw new Error('CONFIG_ERROR: Agência sem Planilha Google conectada.');
+    }
     await this.init(); // Ensure sheetsClient is initialized
 
     try {

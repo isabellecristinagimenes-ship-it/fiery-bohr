@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const metricsRoutes = require('./routes/metricsRoutes');
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const db = require('./models');
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/metrics', metricsRoutes);
 app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
 
 app.get('/', (req, res) => res.json({ status: 'ok', service: 'fiery-bohr-backend' }));
 
