@@ -123,17 +123,92 @@ export default function AdminDashboard() {
 
     const handleCreateAgency = async (e) => {
         e.preventDefault();
+
+        // Manual Validation (Better UX than silent HTML5 block)
+        if (!agencyForm.agencyName || !agencyForm.spreadsheetId || !agencyForm.adminName || !agencyForm.adminEmail) {
+            alert('Por favor, preencha todos os campos!');
+            return;
+        }
+
         setStatus('loading');
         try {
             const res = await axios.post(`${API_URL}/admin/agencies`, agencyForm);
             setStatus('success_agency');
+            alert('Imobiliária Criada com Sucesso!');
             setAgencyForm({ agencyName: '', spreadsheetId: '', adminName: '', adminEmail: '', adminPassword: 'mudar123' });
             fetchAgencies();
             setIsCreating(false);
         } catch (error) {
-            setStatus('error: ' + (error.response?.data?.error || 'Erro ao criar agência'));
+            console.error(error);
+            const errorMsg = error.response?.data?.error || 'Erro ao criar agência';
+            setStatus('error: ' + errorMsg);
+            alert('Erro: ' + errorMsg);
         }
     };
+
+    // ... (rest of code)
+
+    // In the return JSX, inside the form:
+    // REMOVE 'required' from all inputs and ensure button has feedback
+    return (
+        // ... inside the isCreating block ...
+        <form onSubmit={handleCreateAgency} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+            <div>
+                <label style={styles.label}>Nome da Imobiliária</label>
+                <input type="text" placeholder="Ex: Imobiliária Elite"
+                    style={styles.input}
+                    value={agencyForm.agencyName} onChange={e => setAgencyForm({ ...agencyForm, agencyName: e.target.value })}
+                    onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
+                    onBlur={e => e.target.style.borderColor = '#333'}
+                />
+            </div>
+            <div>
+                <label style={styles.label}>ID da Planilha (Google Sheets)</label>
+                <input type="text" placeholder="ID da URL..."
+                    style={styles.input}
+                    value={agencyForm.spreadsheetId} onChange={e => setAgencyForm({ ...agencyForm, spreadsheetId: e.target.value })}
+                    onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
+                    onBlur={e => e.target.style.borderColor = '#333'}
+                />
+            </div>
+            <div style={{ borderTop: '1px solid #333', gridColumn: '1/-1', margin: '1rem 0' }}></div>
+            <div>
+                <label style={styles.label}>Nome do Admin</label>
+                <input type="text" placeholder="Seu Nome"
+                    style={styles.input}
+                    value={agencyForm.adminName} onChange={e => setAgencyForm({ ...agencyForm, adminName: e.target.value })}
+                    onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
+                    onBlur={e => e.target.style.borderColor = '#333'}
+                />
+            </div>
+            <div>
+                <label style={styles.label}>Email do Admin</label>
+                <input type="email" placeholder="admin@email.com"
+                    style={styles.input}
+                    value={agencyForm.adminEmail} onChange={e => setAgencyForm({ ...agencyForm, adminEmail: e.target.value })}
+                    onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
+                    onBlur={e => e.target.style.borderColor = '#333'}
+                />
+            </div>
+
+            <div style={{ gridColumn: '1/-1', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="button" onClick={() => setIsCreating(false)} style={styles.buttonSecondary}>
+                    Cancelar
+                </button>
+                <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    style={{
+                        ...styles.buttonPrimary,
+                        opacity: status === 'loading' ? 0.7 : 1,
+                        cursor: status === 'loading' ? 'wait' : 'pointer'
+                    }}
+                >
+                    {status === 'loading' ? 'Salvando...' : <><Save size={20} /> Salvar e Criar</>}
+                </button>
+            </div>
+        </form>
+    );
 
     const handleAddUser = async (e) => {
         e.preventDefault();
@@ -278,7 +353,7 @@ export default function AdminDashboard() {
                         <form onSubmit={handleCreateAgency} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                             <div>
                                 <label style={styles.label}>Nome da Imobiliária</label>
-                                <input type="text" placeholder="Ex: Imobiliária Elite" required
+                                <input type="text" placeholder="Ex: Imobiliária Elite"
                                     style={styles.input}
                                     value={agencyForm.agencyName} onChange={e => setAgencyForm({ ...agencyForm, agencyName: e.target.value })}
                                     onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
@@ -287,7 +362,7 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                                 <label style={styles.label}>ID da Planilha (Google Sheets)</label>
-                                <input type="text" placeholder="ID da URL..." required
+                                <input type="text" placeholder="ID da URL..."
                                     style={styles.input}
                                     value={agencyForm.spreadsheetId} onChange={e => setAgencyForm({ ...agencyForm, spreadsheetId: e.target.value })}
                                     onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
@@ -297,7 +372,7 @@ export default function AdminDashboard() {
                             <div style={{ borderTop: '1px solid #333', gridColumn: '1/-1', margin: '1rem 0' }}></div>
                             <div>
                                 <label style={styles.label}>Nome do Admin</label>
-                                <input type="text" placeholder="Seu Nome" required
+                                <input type="text" placeholder="Seu Nome"
                                     style={styles.input}
                                     value={agencyForm.adminName} onChange={e => setAgencyForm({ ...agencyForm, adminName: e.target.value })}
                                     onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
@@ -306,7 +381,7 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                                 <label style={styles.label}>Email do Admin</label>
-                                <input type="email" placeholder="admin@email.com" required
+                                <input type="email" placeholder="admin@email.com"
                                     style={styles.input}
                                     value={agencyForm.adminEmail} onChange={e => setAgencyForm({ ...agencyForm, adminEmail: e.target.value })}
                                     onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
@@ -318,8 +393,16 @@ export default function AdminDashboard() {
                                 <button type="button" onClick={() => setIsCreating(false)} style={styles.buttonSecondary}>
                                     Cancelar
                                 </button>
-                                <button type="submit" style={styles.buttonPrimary}>
-                                    <Save size={20} /> Salvar e Criar
+                                <button
+                                    type="submit"
+                                    disabled={status === 'loading'}
+                                    style={{
+                                        ...styles.buttonPrimary,
+                                        opacity: status === 'loading' ? 0.7 : 1,
+                                        cursor: status === 'loading' ? 'wait' : 'pointer'
+                                    }}
+                                >
+                                    {status === 'loading' ? 'Salvando...' : <><Save size={20} /> Salvar e Criar</>}
                                 </button>
                             </div>
                         </form>
