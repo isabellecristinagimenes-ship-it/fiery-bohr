@@ -57,13 +57,7 @@ router.post('/agencies', async (req, res) => {
     }
 });
 
-        });
 
-    } catch (error) {
-    console.error('Admin Error:', error);
-    res.status(500).json({ error: 'Erro ao criar agência.' });
-}
-});
 
 // List Agencies (For Dropdown)
 router.get('/agencies', async (req, res) => {
