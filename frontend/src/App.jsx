@@ -98,7 +98,7 @@ function Dashboard() {
       <header>
         <div>
           <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Imobiliária CRM
+            Imobiliária CRM <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>(v2.6)</span>
             <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '10px', background: 'var(--primary)', color: 'white' }}>
               {user?.role === 'admin' ? 'ADMIN' : 'CORRETOR'}
             </span>
