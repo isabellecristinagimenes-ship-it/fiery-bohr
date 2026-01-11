@@ -3,8 +3,7 @@ import { useAuth } from '../context/AuthContext';
 const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
 console.log('🔌 FE is trying to connect to:', API_URL); // Debug request URL
 
-const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
-    const { user } = useAuth();
+const AddLeadModal = ({ isOpen, onClose, onSuccess, currentUser }) => {
     if (!isOpen) return null;
 
     const [formData, setFormData] = useState({
@@ -36,7 +35,8 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
             // Prepara os dados para envio
             const dataToSend = {
                 ...formData,
-                corretor: user?.name || 'Desconhecido', // Auto-fill corretor
+                corretor: currentUser?.name || 'Desconhecido',
+                agencyId: currentUser?.agencyId, // Crucial for SaaS data isolation
                 // Se origem for "Outro", usa o valor digitado, senão usa o valor do select
                 origem: formData.origem === 'Outro' ? formData.outro_origem : formData.origem
             };

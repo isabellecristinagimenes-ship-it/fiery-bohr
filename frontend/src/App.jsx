@@ -34,9 +34,16 @@ function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // SECURITY: Send agencyId to ensure we only get our data
+      const config = {
+        headers: {
+          'x-agency-id': user?.agencyId
+        }
+      };
+
       const [metricsRes, leadsRes] = await Promise.all([
-        axios.get(`${API_URL}/metrics/overview`),
-        axios.get(`${API_URL}/metrics/leads`)
+        axios.get(`${API_URL}/metrics/overview`, config),
+        axios.get(`${API_URL}/metrics/leads`, config) // Passed to check
       ]);
       setMetrics(metricsRes.data);
       setLeads(leadsRes.data);
@@ -277,6 +284,7 @@ function Dashboard() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleModalSuccess}
+        currentUser={user}
       />
     </div>
   );

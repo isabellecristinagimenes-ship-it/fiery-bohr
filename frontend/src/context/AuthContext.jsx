@@ -27,6 +27,9 @@ export const AuthProvider = ({ children }) => {
                 password
             });
             const userData = response.data;
+            // Ensure we are storing role and agencyId
+            console.log('Login successful:', userData);
+
             setUser(userData);
             localStorage.setItem('fiery_user', JSON.stringify(userData));
             return { success: true };
