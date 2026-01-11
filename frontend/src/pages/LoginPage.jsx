@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Building2, Eye, EyeOff, Loader } from 'lucide-react';
+import { Eye, EyeOff, Loader } from 'lucide-react';
 
 const LoginPage = () => {
     const { login } = useAuth();
@@ -31,7 +31,9 @@ const LoginPage = () => {
             justifyContent: 'center',
             background: '#0a0a0a', // Ultra dark background
             color: '#fff',
-            fontFamily: 'var(--font-sans)'
+            fontFamily: 'var(--font-sans)',
+            backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.1) 0%, transparent 50%)'
+
         }}>
             <div style={{
                 background: '#121212',
@@ -61,31 +63,37 @@ const LoginPage = () => {
                 {/* Header Section */}
                 <div style={{ textAlign: 'center', marginBottom: '2.5rem', position: 'relative' }}>
                     <div style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '50%',
-                        border: '1px solid var(--accent-gold)',
+                        width: '120px',
+                        height: '120px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         margin: '0 auto 1.5rem',
-                        boxShadow: '0 0 20px rgba(251, 191, 36, 0.1)'
                     }}>
-                        <Building2 color="var(--accent-gold)" size={40} strokeWidth={1.5} />
+                        <img
+                            src="/logo.png"
+                            alt="Logo Imobiliária"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 0 15px rgba(251, 191, 36, 0.2))'
+                            }}
+                        />
                     </div>
 
                     <h1 style={{
                         fontSize: '2rem',
                         fontWeight: 400,
                         marginBottom: '0.5rem',
-                        fontFamily: 'var(--font-serif)', // Elegant serif
+                        fontFamily: 'var(--font-serif)',
                         letterSpacing: '-0.02em',
                         color: 'white'
                     }}>
                         Bem-vindo de volta
                     </h1>
                     <p style={{ color: '#525252', fontSize: '0.95rem' }}>
-                        Sua gestão imobiliária premium começa aqui.
+                        Sua gestão imobiliária começa aqui.
                     </p>
                 </div>
 
@@ -194,12 +202,6 @@ const LoginPage = () => {
                         {loading ? <Loader className="animate-spin" size={20} /> : 'Entrar no sistema'}
                     </button>
                 </form>
-
-                <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-                    <a href="#" style={{ color: '#525252', fontSize: '0.85rem', textDecoration: 'none' }}>
-                        Esqueceu a senha? A gente te ajuda.
-                    </a>
-                </div>
 
                 <div style={{ marginTop: '3rem', textAlign: 'center', fontSize: '0.75rem', color: '#333' }}>
                     © 2026 Imobiliária MVP. Gestão imobiliária premium.
