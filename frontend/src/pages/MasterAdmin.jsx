@@ -197,26 +197,51 @@ export default function MasterAdmin() {
                                         <option value="broker">Corretor</option>
                                         <option value="admin">Gerente</option>
                                     </select>
+                                    <div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                                            <div style={styles.card}>
+                                                <button onClick={() => setView('DASHBOARD')} style={styles.btnSecondary}>← Voltar</button>
+                                                <h2 style={{ marginTop: '1rem', color: '#fbbf24' }}>{selectedAgency.name}</h2>
+                                                <p style={{ color: '#666', wordBreak: 'break-all' }}>Planilha: {selectedAgency.spreadsheetId}</p>
+                                                <div style={{ marginTop: '1rem', padding: '1rem', background: '#000', borderRadius: '0.5rem', border: '1px solid #333' }}>
+                                                    <Check size={16} color="green" style={{ display: 'inline', marginRight: '0.5rem' }} />
+                                                    Integração Ativa
+                                                </div>
+                                            </div>
+
+                                            <div style={styles.card}>
+                                                <h3>Adicionar Usuário</h3>
+                                                <form onSubmit={handleAddUser}>
+                                                    <input placeholder="Nome" value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} style={styles.input} />
+                                                    <input placeholder="Email" value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} style={styles.input} />
+                                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                                        <input placeholder="Senha" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} style={styles.input} />
+                                                        <select style={styles.input} value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value })}>
+                                                            <option value="broker">Corretor</option>
+                                                            <option value="admin">Gerente</option>
+                                                        </select>
+                                                    </div>
+                                                    <button type="submit" style={styles.btnPrimary}>Adicionar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <button onClick={() => fetchUsers(selectedAgency.id)} style={{ ...styles.btnSecondary, marginTop: '2rem', width: '100%' }}>
+                                            👥 Ver Usuários Desta Agência
+                                        </button>
+
+                                        {agencyUsers.length > 0 && (
+                                            <ul style={{ marginTop: '1rem', maxHeight: '200px', overflowY: 'auto', background: '#000', padding: '1rem', borderRadius: '0.5rem' }}>
+                                                {agencyUsers.map(u => (
+                                                    <li key={u.id} style={{ padding: '0.5rem', borderBottom: '1px solid #333' }}>
+                                                        {u.name} (<span style={{ color: '#fbbf24' }}>{u.email}</span>) - {u.role}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                )}
                                 </div>
-                                <button type="submit" style={styles.btnPrimary}>Adicionar</button>
-                            </form>
                         </div>
-                    </div>
-                            <button onClick={() => fetchUsers(selectedAgency.id)} style={{...styles.btnSecondary, marginTop: '1rem'}}>
-                                👥 Ver Usuários Desta Agência
-                            </button>
-                            <ul style={{ marginTop: '1rem', maxHeight: '200px', overflowY: 'auto' }}>
-                                {agencyUsers.map(u => (
-                                    <li key={u.id} style={{ padding: '0.5rem', borderBottom: '1px solid #333' }}>
-                                        {u.name} ({u.email}) - {u.role}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-        </div>
-    )
-}
-            </div >
-        </div >
-    );
+                        );
 }
