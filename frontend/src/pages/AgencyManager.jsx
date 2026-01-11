@@ -266,6 +266,11 @@ export default function AgencyManager() {
                             ← Voltar
                         </button>
                     )}
+                    {/* EMERGENCY LOGOUT BUTTON */}
+                    <button onClick={() => { setIsAuthenticated(false); setIsCreating(false); setSelectedAgency(null); }}
+                        style={{ marginLeft: '1rem', background: 'red', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.8rem' }}>
+                        🔒 BLOQUEAR
+                    </button>
                 </div>
 
                 {/* Status Messages */}
