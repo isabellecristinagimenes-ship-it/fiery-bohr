@@ -348,11 +348,17 @@ export default function AdminDashboard() {
 
                 {/* VIEW 2: CREATE AGENCY FORM */}
                 {isCreating && (
-                    <div className="animate-fade-in">
-                        <h3 style={{ color: 'white', fontSize: '1.5rem', fontFamily: 'var(--font-serif)', marginBottom: '2rem' }}>
-                            Cadastrar Nova Imobiliária <span style={{ fontSize: '0.9rem', color: '#fbbf24', marginLeft: '0.5rem' }}>(v2.6 - FORCE)</span>
-                        </h3>
-                        <form onSubmit={handleCreateAgency} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                    <div className="animate-fade-in" style={{ maxWidth: '600px', margin: '0 auto' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <div style={{ background: 'var(--accent-gold)', color: 'black', display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                v3.0 - OFFICIAL
+                            </div>
+                            <h3 style={{ color: 'white', fontSize: '1.5rem', fontFamily: 'var(--font-serif)', marginTop: '1rem' }}>
+                                Nova Imobiliária
+                            </h3>
+                        </div>
+
+                        <form onSubmit={handleCreateAgency} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                             <div>
                                 <label style={styles.label}>Nome da Imobiliária</label>
                                 <input type="text" placeholder="Ex: Imobiliária Elite"
@@ -370,8 +376,13 @@ export default function AdminDashboard() {
                                     onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
                                     onBlur={e => e.target.style.borderColor = '#333'}
                                 />
+                                <small style={{ color: '#525252', display: 'block', marginTop: '0.5rem', fontSize: '0.8rem' }}>
+                                    Copie o código longo na URL da sua planilha.
+                                </small>
                             </div>
-                            <div style={{ borderTop: '1px solid #333', gridColumn: '1/-1', margin: '1rem 0' }}></div>
+
+                            <div style={{ borderTop: '1px solid #333', margin: '0.5rem 0' }}></div>
+
                             <div>
                                 <label style={styles.label}>Nome do Admin</label>
                                 <input type="text" placeholder="Seu Nome"
@@ -391,9 +402,9 @@ export default function AdminDashboard() {
                                 />
                             </div>
 
-                            <div style={{ gridColumn: '1/-1', display: 'flex', gap: '1rem', marginTop: '3rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 9999 }}>
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                                 <button type="button" onClick={() => { setIsCreating(false); setAgencyForm({ agencyName: '', spreadsheetId: '', adminName: '', adminEmail: '', adminPassword: 'mudar123' }); }}
-                                    style={{ ...styles.buttonSecondary, cursor: 'pointer', position: 'relative', zIndex: 10000 }}>
+                                    style={{ ...styles.buttonSecondary, flex: 1, justifyContent: 'center' }}>
                                     Cancelar
                                 </button>
                                 <button
@@ -401,12 +412,13 @@ export default function AdminDashboard() {
                                     disabled={status === 'loading'}
                                     style={{
                                         ...styles.buttonPrimary,
+                                        width: 'auto',
+                                        flex: 2,
                                         opacity: status === 'loading' ? 0.7 : 1,
-                                        cursor: status === 'loading' ? 'wait' : 'pointer',
-                                        zIndex: 20
+                                        cursor: status === 'loading' ? 'wait' : 'pointer'
                                     }}
                                 >
-                                    {status === 'loading' ? 'Salvando...' : <><Save size={20} /> Salvar e Criar</>}
+                                    {status === 'loading' ? 'Salvando...' : <><Save size={20} /> Criar Imobiliária</>}
                                 </button>
                             </div>
                         </form>
