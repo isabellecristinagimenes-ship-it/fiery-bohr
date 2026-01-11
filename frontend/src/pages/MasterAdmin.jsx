@@ -67,16 +67,29 @@ export default function MasterAdmin() {
         }
     };
 
+    const [agencyUsers, setAgencyUsers] = useState([]);
+
+    const fetchUsers = async (agencyId) => {
+        try {
+            const res = await axios.get(`${API_URL}/admin/users/${agencyId}`);
+            setAgencyUsers(res.data);
+        } catch (err) {
+            alert('Erro ao buscar usuários: ' + err.message);
+        }
+    };
+
     const handleAddUser = async (e) => {
         e.preventDefault();
         if (!selectedAgency) return;
         try {
             await axios.post(`${API_URL}/admin/users`, {
                 ...userForm,
+                email: userForm.email.toLowerCase(), // Force Lowercasing for safety
                 agencyId: selectedAgency.id
             });
             alert('Usuário Adicionado!');
             setUserForm({ name: '', email: '', password: '123', role: 'broker' });
+            fetchUsers(selectedAgency.id); // Refresh list
         } catch (err) {
             alert('Erro: ' + (err.response?.data?.error || err.message));
         }
@@ -189,8 +202,21 @@ export default function MasterAdmin() {
                             </form>
                         </div>
                     </div>
-                )}
-            </div>
+                            <button onClick={() => fetchUsers(selectedAgency.id)} style={{...styles.btnSecondary, marginTop: '1rem'}}>
+                                👥 Ver Usuários Desta Agência
+                            </button>
+                            <ul style={{ marginTop: '1rem', maxHeight: '200px', overflowY: 'auto' }}>
+                                {agencyUsers.map(u => (
+                                    <li key={u.id} style={{ padding: '0.5rem', borderBottom: '1px solid #333' }}>
+                                        {u.name} ({u.email}) - {u.role}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
         </div>
+    )
+}
+            </div >
+        </div >
     );
 }

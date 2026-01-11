@@ -97,6 +97,22 @@ router.post('/users', async (req, res) => {
     } catch (error) {
         console.error('Create User Error:', error);
         res.status(500).json({ error: 'Erro ao criar usuário.' });
+    } catch (error) {
+        console.error('Create User Error:', error);
+        res.status(500).json({ error: 'Erro ao criar usuário.' });
+    }
+});
+
+// List Users by Agency (Debug/Management)
+router.get('/users/:agencyId', async (req, res) => {
+    try {
+        const users = await User.findAll({
+            where: { agencyId: req.params.agencyId },
+            attributes: ['id', 'name', 'email', 'role']
+        });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao listar usuários' });
     }
 });
 
