@@ -1,4 +1,3 @@
-```javascript
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Shield, Check, AlertTriangle, Users, Settings, Save } from 'lucide-react';
@@ -9,13 +8,13 @@ const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
 export default function AdminDashboard() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [passwordInput, setPasswordInput] = useState('');
-    
+
     // Hardcoded Master Password for this Template (Can be changed in code by owner)
-    const MASTER_PASSWORD = 'admin_mestre_seguro'; 
+    const MASTER_PASSWORD = 'admin_mestre_seguro';
 
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+
     // Single Tenant State
     const [agency, setAgency] = useState(null); // The ONE agency
     const [users, setUsers] = useState([]);     // Team members
@@ -47,16 +46,16 @@ export default function AdminDashboard() {
     if (!isAuthenticated) {
         return (
             <div className="login-container">
-                <div className="login-box" style={{textAlign: 'center'}}>
+                <div className="login-box" style={{ textAlign: 'center' }}>
                     <Shield size={48} color="var(--accent-gold)" style={{ margin: '0 auto 1rem' }} />
-                    <h2 style={{color: 'white', marginBottom: '1rem'}}>Acesso Restrito</h2>
-                    <p style={{color: 'var(--text-muted)', marginBottom: '1.5rem'}}>
+                    <h2 style={{ color: 'white', marginBottom: '1rem' }}>Acesso Restrito</h2>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
                         Esta área é exclusiva para a configuração do sistema.
                     </p>
                     <form onSubmit={handleLogin}>
-                        <input 
-                            type="password" 
-                            placeholder="Senha Mestre" 
+                        <input
+                            type="password"
+                            placeholder="Senha Mestre"
                             value={passwordInput}
                             onChange={e => setPasswordInput(e.target.value)}
                             style={{
@@ -71,8 +70,8 @@ export default function AdminDashboard() {
                         />
                         <button type="submit" className="login-button">Acessar Painel</button>
                     </form>
-                    <div style={{marginTop: '1.5rem'}}>
-                         <a href="/" style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Voltar</a>
+                    <div style={{ marginTop: '1.5rem' }}>
+                        <a href="/" style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Voltar</a>
                     </div>
                 </div>
             </div>
@@ -81,10 +80,10 @@ export default function AdminDashboard() {
 
     const fetchAgencyData = async () => {
         try {
-            const res = await axios.get(`${ API_URL } /admin/agencies`);
+            const res = await axios.get(`${API_URL} /admin/agencies`);
             // In Single-Tenant Template mode, we assume the first agency is THE agency.
             if (res.data && res.data.length > 0) {
-                setAgency(res.data[0]); 
+                setAgency(res.data[0]);
                 // Could fetch users here too if endpoint existed
             }
         } catch (err) {
@@ -98,7 +97,7 @@ export default function AdminDashboard() {
         e.preventDefault();
         setStatus('loading');
         try {
-            const res = await axios.post(`${ API_URL } /admin/agencies`, agencyForm);
+            const res = await axios.post(`${API_URL} /admin/agencies`, agencyForm);
             setStatus('success_agency');
             // After create, set it as active
             setAgency(res.data.agency || { name: agencyForm.agencyName, id: res.data.agencyId }); // fallbacks depending on API response shape
@@ -112,9 +111,9 @@ export default function AdminDashboard() {
         e.preventDefault();
         if (!agency) return;
         setStatus('loading_user');
-        
+
         try {
-            await axios.post(`${ API_URL } /admin/users`, {
+            await axios.post(`${API_URL} /admin/users`, {
                 ...userForm,
                 agencyId: agency.id // AUTO-LINK to the current agency
             });
@@ -130,7 +129,7 @@ export default function AdminDashboard() {
     return (
         <div className="login-container" style={{ alignItems: 'flex-start', paddingTop: '3rem', overflowY: 'auto' }}>
             <div className="login-box" style={{ maxWidth: '900px', width: '100%', padding: '2rem' }}>
-                
+
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
                     <Shield size={40} color="var(--accent-gold)" style={{ marginBottom: '0.5rem' }} />
@@ -138,7 +137,7 @@ export default function AdminDashboard() {
                         Painel de Controle
                     </h1>
                     <p style={{ color: 'var(--text-muted)' }}>
-                        {agency ? `Gerenciando: ${ agency.name } ` : 'Configuração Inicial do Sistema'}
+                        {agency ? `Gerenciando: ${agency.name} ` : 'Configuração Inicial do Sistema'}
                     </p>
                 </div>
 
@@ -155,7 +154,7 @@ export default function AdminDashboard() {
                 )}
 
                 <div style={{ display: 'grid', gridTemplateColumns: agency ? '1fr 1fr' : '1fr', gap: '2rem' }}>
-                    
+
                     {/* LEFT COLUMN: AGENCY SETTINGS */}
                     <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-gold)', marginBottom: '1rem' }}>
@@ -165,33 +164,33 @@ export default function AdminDashboard() {
                         {!agency ? (
                             <form onSubmit={handleCreateAgency} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '1rem', borderRadius: '0.5rem', fontSize: '0.85rem', color: '#a5b4fc', marginBottom: '0.5rem' }}>
-                                    <strong>🚀 Configuração Inicial:</strong><br/>
-                                    Defina os dados da imobiliária dona deste projeto. 
-                                    <br/><br/>
-                                    <strong>Email do Robô (Adicionar como Editor na Planilha):</strong><br/>
-                                    <code style={{userSelect: 'all'}}>leitor@imobiliaria-mvp.iam.gserviceaccount.com</code>
+                                    <strong>🚀 Configuração Inicial:</strong><br />
+                                    Defina os dados da imobiliária dona deste projeto.
+                                    <br /><br />
+                                    <strong>Email do Robô (Adicionar como Editor na Planilha):</strong><br />
+                                    <code style={{ userSelect: 'all' }}>leitor@imobiliaria-mvp.iam.gserviceaccount.com</code>
                                 </div>
 
                                 <div className="input-group">
                                     <label>Nome da Imobiliária</label>
-                                    <input type="text" placeholder="Ex: Imobiliária Modelo" required 
-                                        value={agencyForm.agencyName} onChange={e => setAgencyForm({...agencyForm, agencyName: e.target.value})} />
+                                    <input type="text" placeholder="Ex: Imobiliária Modelo" required
+                                        value={agencyForm.agencyName} onChange={e => setAgencyForm({ ...agencyForm, agencyName: e.target.value })} />
                                 </div>
                                 <div className="input-group">
                                     <label>ID da Planilha Google (Spreadsheet ID)</label>
-                                    <input type="text" placeholder="Cole o ID da URL..." required 
-                                        value={agencyForm.spreadsheetId} onChange={e => setAgencyForm({...agencyForm, spreadsheetId: e.target.value})} />
+                                    <input type="text" placeholder="Cole o ID da URL..." required
+                                        value={agencyForm.spreadsheetId} onChange={e => setAgencyForm({ ...agencyForm, spreadsheetId: e.target.value })} />
                                 </div>
-                                <h4 style={{marginTop: '0.5rem', color: 'white'}}>Primeiro Admin (Você)</h4>
+                                <h4 style={{ marginTop: '0.5rem', color: 'white' }}>Primeiro Admin (Você)</h4>
                                 <div className="input-group">
                                     <label>Seu Nome</label>
-                                    <input type="text" placeholder="Nome Completo" required 
-                                        value={agencyForm.adminName} onChange={e => setAgencyForm({...agencyForm, adminName: e.target.value})} />
+                                    <input type="text" placeholder="Nome Completo" required
+                                        value={agencyForm.adminName} onChange={e => setAgencyForm({ ...agencyForm, adminName: e.target.value })} />
                                 </div>
                                 <div className="input-group">
                                     <label>Seu Email de Login</label>
-                                    <input type="email" placeholder="admin@email.com" required 
-                                        value={agencyForm.adminEmail} onChange={e => setAgencyForm({...agencyForm, adminEmail: e.target.value})} />
+                                    <input type="email" placeholder="admin@email.com" required
+                                        value={agencyForm.adminEmail} onChange={e => setAgencyForm({ ...agencyForm, adminEmail: e.target.value })} />
                                 </div>
                                 <button type="submit" className="login-button" disabled={status === 'loading'}>
                                     Salvar Configuração e Criar
@@ -200,12 +199,12 @@ export default function AdminDashboard() {
                         ) : (
                             <div>
                                 <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{color: 'var(--text-muted)', fontSize: '0.85rem'}}>Nome Registrado</label>
-                                    <div style={{fontSize: '1.1rem', fontWeight: 600}}>{agency.name}</div>
+                                    <label style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Nome Registrado</label>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{agency.name}</div>
                                 </div>
                                 <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{color: 'var(--text-muted)', fontSize: '0.85rem'}}>ID da Planilha Conectada</label>
-                                    <div style={{fontSize: '0.9rem', fontFamily: 'monospace', background: 'rgba(0,0,0,0.3)', padding: '0.5rem', borderRadius: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                    <label style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>ID da Planilha Conectada</label>
+                                    <div style={{ fontSize: '0.9rem', fontFamily: 'monospace', background: 'rgba(0,0,0,0.3)', padding: '0.5rem', borderRadius: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         {agency.spreadsheetId || 'Não configurado'}
                                     </div>
                                 </div>
@@ -222,28 +221,28 @@ export default function AdminDashboard() {
                             <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-gold)', marginBottom: '1rem' }}>
                                 <Users size={20} /> Gerenciar Equipe
                             </h3>
-                            
+
                             <form onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 <div className="input-group">
                                     <label>Nome do Colaborador</label>
-                                    <input type="text" placeholder="Ex: Ana Corretora" required 
-                                        value={userForm.name} onChange={e => setUserForm({...userForm, name: e.target.value})} />
+                                    <input type="text" placeholder="Ex: Ana Corretora" required
+                                        value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} />
                                 </div>
                                 <div className="input-group">
                                     <label>Email de Acesso</label>
-                                    <input type="email" placeholder="ana@email.com" required 
-                                        value={userForm.email} onChange={e => setUserForm({...userForm, email: e.target.value})} />
+                                    <input type="email" placeholder="ana@email.com" required
+                                        value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} />
                                 </div>
                                 <div className="input-group">
                                     <label>Senha Inicial</label>
-                                    <input type="text" placeholder="123456" required 
-                                        value={userForm.password} onChange={e => setUserForm({...userForm, password: e.target.value})} />
+                                    <input type="text" placeholder="123456" required
+                                        value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} />
                                 </div>
                                 <div className="input-group">
                                     <label>Função no Sistema</label>
-                                    <select 
+                                    <select
                                         value={userForm.role}
-                                        onChange={e => setUserForm({...userForm, role: e.target.value})}
+                                        onChange={e => setUserForm({ ...userForm, role: e.target.value })}
                                         style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }}
                                     >
                                         <option value="broker">Corretor (Vê apenas seus leads)</option>
@@ -251,7 +250,7 @@ export default function AdminDashboard() {
                                     </select>
                                 </div>
 
-                                <button type="submit" className="login-button" style={{marginTop: '1rem'}} disabled={status === 'loading_user'}>
+                                <button type="submit" className="login-button" style={{ marginTop: '1rem' }} disabled={status === 'loading_user'}>
                                     Adicionar Membro à Equipe
                                 </button>
                             </form>
