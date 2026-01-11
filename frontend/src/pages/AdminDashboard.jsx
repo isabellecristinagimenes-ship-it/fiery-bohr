@@ -350,7 +350,7 @@ export default function AdminDashboard() {
                 {isCreating && (
                     <div className="animate-fade-in">
                         <h3 style={{ color: 'white', fontSize: '1.5rem', fontFamily: 'var(--font-serif)', marginBottom: '2rem' }}>
-                            Cadastrar Nova Imobiliária <span style={{ fontSize: '0.9rem', color: '#fbbf24', marginLeft: '0.5rem' }}>(v2.5 - FORCE)</span>
+                            Cadastrar Nova Imobiliária <span style={{ fontSize: '0.9rem', color: '#fbbf24', marginLeft: '0.5rem' }}>(v2.6 - FORCE)</span>
                         </h3>
                         <form onSubmit={handleCreateAgency} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                             <div>

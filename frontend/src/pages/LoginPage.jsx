@@ -97,7 +97,7 @@ const LoginPage = () => {
                     </p>
                     <p style={{ marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                         Sistema exclusivo para corretores de alta performance. <br />
-                        <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Versão 2.1 (Deploy Confirmado)</span>
+                        <span style={{ fontSize: '0.75rem', opacity: 0.7, color: '#fbbf24' }}>Versão 2.6 (UPDATE FORÇADO)</span>
                     </p>
                 </div>
 
