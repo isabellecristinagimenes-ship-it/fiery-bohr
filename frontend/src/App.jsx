@@ -29,6 +29,12 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Analytics State
+  const [period, setPeriod] = useState(30);
+  const [brokerRank, setBrokerRank] = useState([]);
+  const [propRank, setPropRank] = useState([]);
+  const [loadingRank, setLoadingRank] = useState(false);
+
   // Filter leads based on role
   const filteredLeads = user?.role === 'admin'
     ? leads
