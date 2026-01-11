@@ -55,7 +55,7 @@ export default function MasterAdmin() {
                 spreadsheetId: agencyForm.spreadsheetId,
                 adminName: agencyForm.adminName,
                 adminEmail: agencyForm.adminEmail,
-                adminPassword: 'mudar123'
+                adminPassword: agencyForm.adminPassword || 'mudar123'
             });
             alert('Imobiliária Criada!');
             setAgencyForm({ name: '', spreadsheetId: '', adminName: '', adminEmail: '' });
@@ -154,6 +154,7 @@ export default function MasterAdmin() {
                             <hr style={{ borderColor: '#333', margin: '1rem 0' }} />
                             <input placeholder="Aadmin - Nome" value={agencyForm.adminName} onChange={e => setAgencyForm({ ...agencyForm, adminName: e.target.value })} style={styles.input} />
                             <input placeholder="Admin - Email" value={agencyForm.adminEmail} onChange={e => setAgencyForm({ ...agencyForm, adminEmail: e.target.value })} style={styles.input} />
+                            <input placeholder="Admin - Senha (Opcional)" value={agencyForm.adminPassword || ''} onChange={e => setAgencyForm({ ...agencyForm, adminPassword: e.target.value })} style={styles.input} />
                             <button type="submit" disabled={loading} style={styles.btnPrimary}>{loading ? 'Criando...' : 'Salvar e Criar'}</button>
                         </form>
                     </div>
