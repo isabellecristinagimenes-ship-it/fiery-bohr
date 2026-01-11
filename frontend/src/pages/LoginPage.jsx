@@ -209,6 +209,8 @@ const LoginPage = () => {
 
                 <div style={{ marginTop: '3rem', textAlign: 'center', fontSize: '0.75rem', color: '#333' }}>
                     © 2026 Imobiliária MVP. Gestão imobiliária premium. <br />
+                    <span style={{ fontSize: '0.9rem', color: '#fbbf24', fontWeight: 'bold' }}>v6.0 (DEPLOY DESTRAVADO)</span>
+                    <br />
                     <span style={{ opacity: 0.3 }}>Debug Path: {window.location.pathname}</span>
                 </div>
             </div>
