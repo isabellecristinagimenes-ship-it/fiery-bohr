@@ -32,32 +32,51 @@ router.post('/login', async (req, res) => {
 });
 
 // Setup Initial Users (Run once)
+// Setup Initial Users (Run once)
 router.post('/setup', async (req, res) => {
     try {
-        const count = await User.count();
-        if (count > 0) {
-            return res.status(400).json({ message: 'Usuários já existem.' });
+        // Create Demo Agency
+        const [agency, created] = await db.Agency.findOrCreate({
+            where: { name: 'Imobiliária MVP' },
+            defaults: {
+                plan: 'premium',
+                active: true
+            }
+        });
+
+        const agencyId = agency.id;
+
+        // Check if users exist for this agency, if not create them
+        const adminEmail = 'admin@imobiliaria.com';
+        const adminUser = await User.findOne({ where: { email: adminEmail } });
+
+        if (!adminUser) {
+            await User.create({
+                name: 'Administrador',
+                email: adminEmail,
+                password: 'admin', // In production use bcrypt
+                role: 'owner',
+                agencyId: agencyId
+            });
         }
 
-        await User.bulkCreate([
-            {
-                name: 'Administrador',
-                email: 'admin@imobiliaria.com',
-                password: 'admin', // Default password
-                role: 'admin'
-            },
-            {
-                name: 'João Corretor',
-                email: 'joao@imobiliaria.com',
-                password: 'joao', // Default password
-                role: 'broker'
-            }
-        ]);
+        const brokerEmail = 'joao@imobiliaria.com';
+        const brokerUser = await User.findOne({ where: { email: brokerEmail } });
 
-        res.json({ message: 'Usuários criados com sucesso!' });
+        if (!brokerUser) {
+            await User.create({
+                name: 'João Corretor',
+                email: brokerEmail,
+                password: 'joao', // In production use bcrypt
+                role: 'broker',
+                agencyId: agencyId
+            });
+        }
+
+        res.json({ message: 'Setup completed. Agência e Usuários configurados.' });
     } catch (error) {
         console.error('Setup Error:', error);
-        res.status(500).json({ error: 'Erro ao criar usuários' });
+        res.status(500).json({ error: 'Erro ao criar configuração inicial' });
     }
 });
 

@@ -20,8 +20,8 @@ const startServer = async () => {
   try {
     await db.sequelize.authenticate();
     console.log('✅ Database connected.');
-    await db.sequelize.sync();
-    console.log('✅ Database synced.');
+    await db.sequelize.sync({ alter: true });
+    console.log('✅ Database synced (Alter mode).');
   } catch (err) {
     console.error('❌ Database connection error:', err.message);
     // We do not exit here, to allow the Metrics API to run even if DB fails

@@ -14,10 +14,22 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         },
         role: {
-            type: DataTypes.ENUM('admin', 'broker'),
+            type: DataTypes.ENUM('owner', 'broker'),
             defaultValue: 'broker'
+        },
+        agencyId: {
+            type: DataTypes.UUID,
+            allowNull: true, // Nullable for super-admins or initial setup
+            references: {
+                model: 'Agencies',
+                key: 'id'
+            }
         }
     }, {});
+
+    User.associate = function (models) {
+        User.belongsTo(models.Agency, { foreignKey: 'agencyId', as: 'agency' });
+    };
 
     return User;
 };
