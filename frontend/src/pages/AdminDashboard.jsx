@@ -347,69 +347,70 @@ export default function AdminDashboard() {
                 )}
 
                 {/* VIEW 2: CREATE AGENCY FORM */}
-                <div className="animate-fade-in">
-                    <h3 style={{ color: 'white', fontSize: '1.5rem', fontFamily: 'var(--font-serif)', marginBottom: '2rem' }}>
-                        Cadastrar Nova Imobiliária <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>(v2.3)</span>
-                    </h3>
-                    <form onSubmit={handleCreateAgency} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-                        <div>
-                            <label style={styles.label}>Nome da Imobiliária</label>
-                            <input type="text" placeholder="Ex: Imobiliária Elite"
-                                style={styles.input}
-                                value={agencyForm.agencyName} onChange={e => setAgencyForm({ ...agencyForm, agencyName: e.target.value })}
-                                onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
-                                onBlur={e => e.target.style.borderColor = '#333'}
-                            />
-                        </div>
-                        <div>
-                            <label style={styles.label}>ID da Planilha (Google Sheets)</label>
-                            <input type="text" placeholder="ID da URL..."
-                                style={styles.input}
-                                value={agencyForm.spreadsheetId} onChange={e => setAgencyForm({ ...agencyForm, spreadsheetId: e.target.value })}
-                                onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
-                                onBlur={e => e.target.style.borderColor = '#333'}
-                            />
-                        </div>
-                        <div style={{ borderTop: '1px solid #333', gridColumn: '1/-1', margin: '1rem 0' }}></div>
-                        <div>
-                            <label style={styles.label}>Nome do Admin</label>
-                            <input type="text" placeholder="Seu Nome"
-                                style={styles.input}
-                                value={agencyForm.adminName} onChange={e => setAgencyForm({ ...agencyForm, adminName: e.target.value })}
-                                onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
-                                onBlur={e => e.target.style.borderColor = '#333'}
-                            />
-                        </div>
-                        <div>
-                            <label style={styles.label}>Email do Admin</label>
-                            <input type="email" placeholder="admin@email.com"
-                                style={styles.input}
-                                value={agencyForm.adminEmail} onChange={e => setAgencyForm({ ...agencyForm, adminEmail: e.target.value })}
-                                onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
-                                onBlur={e => e.target.style.borderColor = '#333'}
-                            />
-                        </div>
+                {isCreating && (
+                    <div className="animate-fade-in">
+                        <h3 style={{ color: 'white', fontSize: '1.5rem', fontFamily: 'var(--font-serif)', marginBottom: '2rem' }}>
+                            Cadastrar Nova Imobiliária <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>(v2.4)</span>
+                        </h3>
+                        <form onSubmit={handleCreateAgency} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                            <div>
+                                <label style={styles.label}>Nome da Imobiliária</label>
+                                <input type="text" placeholder="Ex: Imobiliária Elite"
+                                    style={styles.input}
+                                    value={agencyForm.agencyName} onChange={e => setAgencyForm({ ...agencyForm, agencyName: e.target.value })}
+                                    onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
+                                    onBlur={e => e.target.style.borderColor = '#333'}
+                                />
+                            </div>
+                            <div>
+                                <label style={styles.label}>ID da Planilha (Google Sheets)</label>
+                                <input type="text" placeholder="ID da URL..."
+                                    style={styles.input}
+                                    value={agencyForm.spreadsheetId} onChange={e => setAgencyForm({ ...agencyForm, spreadsheetId: e.target.value })}
+                                    onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
+                                    onBlur={e => e.target.style.borderColor = '#333'}
+                                />
+                            </div>
+                            <div style={{ borderTop: '1px solid #333', gridColumn: '1/-1', margin: '1rem 0' }}></div>
+                            <div>
+                                <label style={styles.label}>Nome do Admin</label>
+                                <input type="text" placeholder="Seu Nome"
+                                    style={styles.input}
+                                    value={agencyForm.adminName} onChange={e => setAgencyForm({ ...agencyForm, adminName: e.target.value })}
+                                    onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
+                                    onBlur={e => e.target.style.borderColor = '#333'}
+                                />
+                            </div>
+                            <div>
+                                <label style={styles.label}>Email do Admin</label>
+                                <input type="email" placeholder="admin@email.com"
+                                    style={styles.input}
+                                    value={agencyForm.adminEmail} onChange={e => setAgencyForm({ ...agencyForm, adminEmail: e.target.value })}
+                                    onFocus={e => e.target.style.borderColor = 'var(--accent-gold)'}
+                                    onBlur={e => e.target.style.borderColor = '#333'}
+                                />
+                            </div>
 
-                        <div style={{ gridColumn: '1/-1', display: 'flex', gap: '1rem', marginTop: '3rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 9999 }}>
-                            <button type="button" onClick={() => { setIsCreating(false); setAgencyForm({ agencyName: '', spreadsheetId: '', adminName: '', adminEmail: '', adminPassword: 'mudar123' }); }}
-                                style={{ ...styles.buttonSecondary, cursor: 'pointer', position: 'relative', zIndex: 10000 }}>
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={status === 'loading'}
-                                style={{
-                                    ...styles.buttonPrimary,
-                                    opacity: status === 'loading' ? 0.7 : 1,
-                                    cursor: status === 'loading' ? 'wait' : 'pointer',
-                                    zIndex: 20
-                                }}
-                            >
-                                {status === 'loading' ? 'Salvando...' : <><Save size={20} /> Salvar e Criar</>}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                            <div style={{ gridColumn: '1/-1', display: 'flex', gap: '1rem', marginTop: '3rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 9999 }}>
+                                <button type="button" onClick={() => { setIsCreating(false); setAgencyForm({ agencyName: '', spreadsheetId: '', adminName: '', adminEmail: '', adminPassword: 'mudar123' }); }}
+                                    style={{ ...styles.buttonSecondary, cursor: 'pointer', position: 'relative', zIndex: 10000 }}>
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={status === 'loading'}
+                                    style={{
+                                        ...styles.buttonPrimary,
+                                        opacity: status === 'loading' ? 0.7 : 1,
+                                        cursor: status === 'loading' ? 'wait' : 'pointer',
+                                        zIndex: 20
+                                    }}
+                                >
+                                    {status === 'loading' ? 'Salvando...' : <><Save size={20} /> Salvar e Criar</>}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 )}
 
                 {/* VIEW 3: SELECTED AGENCY DETAILS */}
