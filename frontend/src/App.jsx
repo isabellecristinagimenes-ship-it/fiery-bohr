@@ -20,8 +20,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard'; // Renamed for cache bursting
 
-// Hardcoded backend URL to bypass env var corruption
-const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
+import { API_URL } from './config';
+
 
 function Dashboard() {
   const { user, logout } = useAuth();

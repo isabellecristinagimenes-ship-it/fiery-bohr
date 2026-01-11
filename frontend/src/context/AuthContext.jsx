@@ -3,9 +3,8 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// Hardcoded backend URL for now (matching App.jsx fix)
-// In expected production, this should come from env var
-const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
+import { API_URL } from '../config';
+
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);

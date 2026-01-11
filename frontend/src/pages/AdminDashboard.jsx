@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Shield, Check, AlertTriangle, Users, Settings, Save } from 'lucide-react';
 
-// Hardcoded for MVP
-const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
+import { API_URL } from '../config';
+
 
 export default function AdminDashboard() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
