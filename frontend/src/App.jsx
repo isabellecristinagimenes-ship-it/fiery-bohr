@@ -9,7 +9,8 @@ import {
   RefreshCcw,
   MessageSquare,
   Plus,
-  LogOut
+  LogOut,
+  TrendingUp
 } from 'lucide-react';
 import AddLeadModal from './components/AddLeadModal';
 import BrokerRankingWidget from './components/BrokerRankingWidget';
