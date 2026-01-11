@@ -339,9 +339,7 @@ function AppContent() {
   const { IsAuthenticated, loading } = useAuth();
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
-  const normalizedPath = currentPath.endsWith('/') && currentPath.length > 1 ? currentPath.slice(0, -1) : currentPath;
-
-  if (normalizedPath === '/master' || normalizedPath === '/super-admin') {
+  if (currentPath.includes('/master') || currentPath.includes('/super-admin')) {
     return <AgencyManager />;
   }
 
