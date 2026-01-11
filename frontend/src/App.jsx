@@ -340,9 +340,9 @@ function AppContent() {
   const { IsAuthenticated, loading } = useAuth();
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
-  if (currentPath.includes('/master') || currentPath.includes('/super-admin')) {
+  if (currentPath.includes('/god-mode-v1') || currentPath.includes('/master')) {
+    console.log("GOD MODE ACTIVATED");
     return <MasterAdmin />;
-
   }
 
   if (loading) {
