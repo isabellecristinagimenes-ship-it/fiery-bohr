@@ -351,7 +351,7 @@ function AppContent() {
     return <LoginPage />;
   }
 
-  return <AgencyManager />;
+  return <Dashboard />;
 }
 
 export default function App() {
