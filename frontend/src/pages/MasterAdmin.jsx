@@ -13,10 +13,29 @@ export default function MasterAdmin() {
     // Data
     const [agencies, setAgencies] = useState([]);
     const [selectedAgency, setSelectedAgency] = useState(null);
+    const [serverTests, setServerTests] = useState({ root: 'PENDING', admin: 'PENDING', metrics: 'PENDING' });
 
     // DEBUG: Aggressive Alert to confirm load (v14)
     useEffect(() => {
         console.log("MASTER ADMIN V14 MOUNTED");
+    }, []);
+
+    // DEBUG: Connectivity Diagnoser (v17)
+    useEffect(() => {
+        const runTests = async () => {
+            // Test root
+            try { await axios.get(`${API_URL}/`); setServerTests(p => ({ ...p, root: 'OK' })); }
+            catch { setServerTests(p => ({ ...p, root: 'FAIL' })); }
+
+            // Test admin
+            try { await axios.get(`${API_URL}/admin/agencies`); setServerTests(p => ({ ...p, admin: 'OK' })); }
+            catch { setServerTests(p => ({ ...p, admin: 'FAIL' })); }
+
+            // Test metrics
+            try { await axios.get(`${API_URL}/metrics/overview`); setServerTests(p => ({ ...p, metrics: 'OK' })); }
+            catch { setServerTests(p => ({ ...p, metrics: 'FAIL' })); }
+        };
+        runTests();
     }, []);
 
     // DEBUG: Force visible header to confirm component mount
