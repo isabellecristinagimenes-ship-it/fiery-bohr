@@ -14,6 +14,14 @@ export default function MasterAdmin() {
     const [agencies, setAgencies] = useState([]);
     const [selectedAgency, setSelectedAgency] = useState(null);
 
+    // DEBUG: Aggressive Alert to confirm load (v14)
+    useEffect(() => {
+        console.log("MASTER ADMIN V14 MOUNTED");
+    }, []);
+
+    // DEBUG: Force visible header to confirm component mount
+    if (view === 'ERROR') return <h1 style={{ color: 'red' }}>CRASHED: {error}</h1>;
+
     // DEBUG: Force visible header to confirm component mount
     if (view === 'ERROR') return <h1 style={{ color: 'red' }}>CRASHED: {error}</h1>;
 
@@ -129,7 +137,7 @@ export default function MasterAdmin() {
     return (
         <div style={styles.container}>
             <div style={{ background: 'red', color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
-                DEBUG MODE: v12.0 (Se você vê isso, o componente carregou)
+                DEBUG MODE: v14.0 (Se você vê isso, o componente carregou)
             </div>
             <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 {/* HEADER */}
