@@ -51,10 +51,17 @@ export default function MasterAdmin() {
         setLoading(true);
         try {
             const res = await axios.get(`${API_URL}/admin/agencies`);
-            setAgencies(res.data);
+            if (Array.isArray(res.data)) {
+                setAgencies(res.data);
+            } else {
+                console.error("FORMAT ERROR:", res.data);
+                alert("Erro: O servidor retornou dados inválidos (não é uma lista).");
+                setAgencies([]);
+            }
             setLoading(false);
         } catch (err) {
             console.error(err);
+            alert("Erro de Conexão: " + err.message);
             setLoading(false);
         }
     };
@@ -136,9 +143,6 @@ export default function MasterAdmin() {
 
     return (
         <div style={styles.container}>
-            <div style={{ background: 'red', color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
-                DEBUG MODE: v14.0 (Se você vê isso, o componente carregou)
-            </div>
             <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 {/* HEADER */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -159,7 +163,7 @@ export default function MasterAdmin() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
-                            {agencies.map(agency => (
+                            {Array.isArray(agencies) && agencies.map(agency => (
                                 <div key={agency.id} onClick={() => { setSelectedAgency(agency); setView('MANAGE_AGENCY'); }}
                                     style={{ background: '#1a1a1a', border: '1px solid #333', padding: '1.5rem', borderRadius: '1rem', cursor: 'pointer', textAlign: 'center' }}>
                                     <Users size={32} color="#fbbf24" style={{ margin: '0 auto 1rem' }} />
@@ -167,7 +171,7 @@ export default function MasterAdmin() {
                                     <small style={{ color: '#666' }}>{agency.id.slice(0, 8)}...</small>
                                 </div>
                             ))}
-                            {agencies.length === 0 && <p style={{ color: '#666' }}>Nenhuma imobiliária encontrada.</p>}
+                            {Array.isArray(agencies) && agencies.length === 0 && <p style={{ color: '#666' }}>Nenhuma imobiliária encontrada.</p>}
                         </div>
                     </div>
                 )}
