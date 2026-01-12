@@ -14,6 +14,11 @@ export default function MasterAdmin() {
     const [agencies, setAgencies] = useState([]);
     const [selectedAgency, setSelectedAgency] = useState(null);
 
+    // DEBUG: Force visible header to confirm component mount
+    if (view === 'ERROR') return <h1 style={{ color: 'red' }}>CRASHED: {error}</h1>;
+
+    // console.log("MasterAdmin Render View:", view); // Visible in browser console if they checked
+
     // Forms
     const [agencyForm, setAgencyForm] = useState({ name: '', spreadsheetId: '', adminName: '', adminEmail: '' });
     const [userForm, setUserForm] = useState({ name: '', email: '', password: '123', role: 'broker' });
@@ -123,6 +128,9 @@ export default function MasterAdmin() {
 
     return (
         <div style={styles.container}>
+            <div style={{ background: 'red', color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
+                DEBUG MODE: v12.0 (Se você vê isso, o componente carregou)
+            </div>
             <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 {/* HEADER */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
