@@ -74,7 +74,8 @@ export default function MasterAdmin() {
                 setAgencies(res.data);
             } else {
                 console.error("FORMAT ERROR:", res.data);
-                alert("Erro: O servidor retornou dados inválidos (não é uma lista).");
+                // SHOW ME THE DATA
+                alert("DEBUG DATA: " + JSON.stringify(res.data));
                 setAgencies([]);
             }
             setLoading(false);
