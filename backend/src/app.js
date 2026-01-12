@@ -70,7 +70,7 @@ app.post('/admin/users', async (req, res) => {
 });
 // ----------------------------------------
 
-app.get('/', (req, res) => res.json({ status: 'ok', service: 'fiery-bohr-backend' }));
+app.get('/', (req, res) => res.json({ status: 'ok', service: 'fiery-bohr-backend', version: 'v19.0-INLINED' }));
 
 // Function to start server
 const startServer = async () => {
