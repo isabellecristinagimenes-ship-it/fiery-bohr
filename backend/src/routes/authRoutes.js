@@ -7,7 +7,9 @@ const User = db.User;
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ where: { email } });
+        // Normalize email to match storage format
+        const normalizedEmail = email ? email.toLowerCase() : '';
+        const user = await User.findOne({ where: { email: normalizedEmail } });
 
         if (!user) {
             return res.status(401).json({ error: 'Usuário não encontrado' });
