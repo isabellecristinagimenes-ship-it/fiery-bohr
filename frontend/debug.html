@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Debugger</title>
+    <style>
+        body {
+            background: #111;
+            color: #fff;
+            font-family: monospace;
+            padding: 2rem;
+        }
+
+        .success {
+            color: #4ade80;
+        }
+
+        .error {
+            color: #ef4444;
+        }
+
+        .box {
+            border: 1px solid #333;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>API Connection Debugger v1.0</h1>
+    <div id="status">Testing...</div>
+
+    <div class="box">
+        <h3>1. Root Health Check (GET /)</h3>
+        <div id="root-test">Waiting...</div>
+    </div>
+
+    <div class="box">
+        <h3>2. Admin Routes Check (GET /admin/agencies)</h3>
+        <div id="admin-test">Waiting...</div>
+    </div>
+
+    <script>
+        const API_URL = 'https://fiery-bohr-production-285c.up.railway.app';
+
+        async function runTests() {
+            // Test 1: Root
+            try {
+                const res = await fetch(API_URL + '/');
+                const text = await res.text();
+                document.getElementById('root-test').innerHTML = `
+                    <div class="${res.ok ? 'success' : 'error'}">Status: ${res.status}</div>
+                    <pre>${text}</pre>
+                `;
+            } catch (e) {
+                document.getElementById('root-test').innerHTML = `<div class="error">FAILED: ${e.message}</div>`;
+            }
+
+            // Test 2: Admin
+            try {
+                const res = await fetch(API_URL + '/admin/agencies');
+                const text = await res.text();
+                document.getElementById('admin-test').innerHTML = `
+                    <div class="${res.ok ? 'success' : 'error'}">Status: ${res.status}</div>
+                    <pre>${text}</pre>
+                `;
+            } catch (e) {
+                document.getElementById('admin-test').innerHTML = `<div class="error">FAILED: ${e.message}</div>`;
+            }
+
+            document.getElementById('status').innerText = "Tests Complete";
+        }
+
+        runTests();
+    </script>
+</body>
+
+</html>

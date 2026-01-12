@@ -196,7 +196,9 @@ export default function MasterAdmin() {
                 {/* VIEW: MANAGE AGENCY */}
                 {view === 'MANAGE_AGENCY' && selectedAgency && (
                     <div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        <div style={{ background: 'red', color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
+                            DEBUG: v16 | API: {API_URL}
+                        </div>                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                             <div style={styles.card}>
                                 <button onClick={() => setView('DASHBOARD')} style={styles.btnSecondary}>← Voltar</button>
                                 <h2 style={{ marginTop: '1rem', color: '#fbbf24' }}>{selectedAgency.name}</h2>
