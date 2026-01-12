@@ -12,12 +12,12 @@ router.post('/login', async (req, res) => {
         const user = await User.findOne({ where: { email: normalizedEmail } });
 
         if (!user) {
-            return res.status(401).json({ error: 'Usuário não encontrado' });
+            return res.status(401).json({ error: `Usuário '${normalizedEmail}' não encontrado.` });
         }
 
-        // Simple password check (In prod, use bcrypt)
+        // Simple password check
         if (user.password !== password) {
-            return res.status(401).json({ error: 'Senha incorreta' });
+            return res.status(401).json({ error: `Senha incorreta para '${normalizedEmail}'.` });
         }
 
         // Return user info (excluding password)
