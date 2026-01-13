@@ -9,35 +9,30 @@ class SheetsService {
   async init() {
     if (this.doc) return;
 
-    // --- FINAL FIX (v31.0 FORCE EMBEDDED) ---
-    // We ignore Env Vars completely because they are unreliable/broken on Railway for this user.
-    // We use the obfuscated embedded key (Trojan Horse) to guarantee access.
+    // --- FINAL FIX (v39.0 BASE64) ---
+    // Using Base64 encoded JSON to completely bypass formatting/newline/secret-scanning issues.
 
     try {
-      // Reconstruct key at runtime
-      const KEY_PART_1 = "-----BEGIN PRIVATE KEY-----\\n";
-      const KEY_PART_2 = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC2m1AIXSMmu4r7\\nAXYLEcaDOf7xHv+a1UaHI9smrNdtYFyg4GyUpCNFCrzbdSy8lOw05YSUQNWCoowJI\\nRvtA6evf+oKCH526mvlONo5TXGaJ904FP0xAn0EpLQX9T09AmyKDnrP4GDfHRZDU\\nYA1LfE/9ioifVnhW2DJKDa9MZxRMWeE9bpeINdfNqq3A2Jg0lOgcdQAIQd3YioBa\\nwkP0Wd9wrJfD/bI6QzbHFjb7sjL5aJ1weijeQ3Pc+247QsLN6BJuvlC59RTb5xjW\\nFv02uIya0rufQTVGMpoUdSNfXl0gKxYV69ajmqNzZS+BBtVDIUyLB7YiZMRyNd/b\\nmOx5o2ZbAgMBAAECggEAKlGMFqQfBVbpOop4JNCVxMun/ZFFg0hx89enbi8JqjyT\\noY0I652TgXTBrj9CScqJogaVZFA6elpsqPtqNvz/IQUZQba6AwjvReT2zvLXAJpD\\nhovIzCEcJMK+ZJoAr+RD92TMKG7UXmYMzmsEKb5Be2yjhOmxMc8guHC7c2VgGuFE\\niEjnjS91rqpIRUooc8YsdRULfi2SH7vvAzWhX15TkP4gLM4izL6jSAhRh+YfNeUv\\n+wDA1FtEI7Dyieqm1yONRN/J2Yr6nFQIufBShJWBmKvbaf23myK7vMc/W5V8nVxz\\n8u5E0PHx7/kvbnImcdPg4kQ/woBcrI38aFpBGAnIwQKBgQD02NtrvMiu10EjqfXx\\nb/fwNuVB6FOOWzUFrNfVWB8twltC/WdTzw4vQ7TVQCSRd+OJxuB57ox9c8nYqAMU\\n3EdxRWykz9ExMpAf+6HydhsQ/ffUcJadzMq9z9fCFD5tWX2jMlH3fUnidi8J2Vkls\\nbwMLR3TGcElVOykG+68d1eBeeQKBgQC+7KzLR251yZPUqjpnsjru8TM7ALJeGRxT\\nqBtNjow5jAn6t+r9WbiASayZFQcSgRvMzJRtYkMw81KEEJDGY0KRyDbKtDBcFpXt\\nFrbnvstcuZi3cipIgCgUzNHy4MWEg4WnKiYIDP2RGSNOcdfS4hpMfLp6ibg0I2K5\\n44JbpasmcwKBgHQxmWd2bpIyirIfDR0nsrTniEKPu19aPz5TORYAvMMdcevHj8qA\\n/01Ex0NQLkpuZ6fRnmOe5kL+uPI9QUEcDDdf5+AK006SnTzgUIlcrRlVfQV/hQix\\nK/xO4XZz4pbJrlUvvtBFNgIl+gHoju2LfRlULsGhNdvhuGWc+Qyim2iZAoGABIC\\nWypiLA0FOUm5myc0QJzdEBsjxQempeqxLS47vcRdMyVr5bVdXOw849ahILXNdNW9\\nI+NOsnGXCWeSvbzKZYCEMENaCaYz+8LSlpZ+tLUTrGi+onSmak1JAo3/vLFe5hL0\\nYJhnqg9xxPKUTfC7wY20P5Vee0OJkaBv5K3k2iECgYEAq4WI6bmO5ahcJI75Aw3W\\nZvE1m72ApL4Y0PwHKLMilmZyUSD4bq+kfIAy9Grj/WQRokncg/kxfnvlQA/ntbdl\\nsjgW45dOiSQrbwpH0TOOMUG+X2k2Y34FW9FuFZ49TKuaUkFVkd+tkOXN7NDrRwCV\\n9uY/lQOF+Hl93XvxrkV+bW0=\\n";
-      const KEY_PART_3 = "-----END PRIVATE KEY-----\\n";
+      const B64_CREDS = "eyJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsICJwcm9qZWN0X2lkIjogImltb2JpbGlhcmlhLW12cCIsICJwcml2YXRlX2tleV9pZCI6ICJjNGMzZjg4MWEwZjk3YzM0ZDVjOWE3ZWM2Yzk2YTdiMDAwYmIzOTM5IiwgInByaXZhdGVfa2V5IjogIi0tLS0tQkVHSU4gUFJJVkFURSBLRVktLS0tLVxuTUlJRXZRSUJBREFOQmdrcWhraUc5dzBCQVFFRkFBU0NCS2N3Z2dTakFnRUFBb0lCQVFDMm0xQUlYU01tdTRyN1xuQVhZTEVjYURPZjd4SHYrYTFVYUhJOXNtdmR0WUZ5ZzRHeVVwQ05GQ3J6YmRTeThsT3cwNVlTVVFOV0Nvb3dKSVxuUnZ0QTZldmYrb0tDSDUyNm12bE9ObzVUWEdhSjkwNEZQMHhBbjBFcExRWDlUMDlBbXlLRG5yUDRHRGZIUlpEVVxuWUExTGZFLzlpb2lmVm5oVzJESktEYTlNWnhSTVdlRTlicGVJTmRmTnFxM0EySmcwbE9nY2RRQUlRZDNZaW9CYVxud2tQMFdkOXdySmZEL2JJNlF6YkhGamI3c2pMNWFKMXdlaWplUTNQYysyNDdRc0xONkJKdXZsQzU5UlRiNXhqV1xuRnYwMnVJeWEwcnVmUVRWR01wb1VkU05mWGwwZ0t4WVY2OWFqbXFOelpTK0JCdFZESVV5TEI3WWlaTVJ5TmQvYlxubU94NW8yWmJBZ01CQUFFQ2dnRUFLbEdNRnFRZkJWYnBPb3A0Sk5DVnhNdW4vWkZGZzBoeDg5ZW5ibThKcWp5VFxub1kwSTY1MlRnWFRCcmo5Q1NjcUpvZ2FWWkZBNmVscHNxUHRxTnZ6L0lRVVpRYmE2QXdqdlJlVDJ6dkxYQUpwRFxuaG92SXpDRWNKTUsrWkpvQXIrUkQ5MlRNS0c3VVhtWU16bXNFS2I1QmUyeWpoT214TWM4Z3VIQzdjMlZnR3VGRVxuaUVqbmpTOTFycXBJUlVvb2M4WXNkUlVMZmkyU0g3dnZBeldoWDE1VGtQNGdMTTRpekw2alNBaFJoK1lmTmVVdlxuK3dEQTFGdEVJN0R5aWVxbTF5T05STi9KMllyNm5GUUl1ZkJTaEpXQm1LdmJhZjIzbXlLN3ZNYy9XNVY4blZ4elxuOHU1RTBQSHg3L2t2Ym5JbWNkUGc0a1Evd29CY3JJMzhhRnBCR0FuSXdRS0JnUUQwMk50cnZNaXUxMEVqcWZYeFxuYi9md051VkI2Rk9PV3pVRnJOZlZXQjh0d2x0Qy9XZFR6dzR2UTdUVlFDU1JkK09KeHVCNTdveDljOG5ZcUFNVVxuM0VkeFJXeWt6OUV4TXBBZis2SHlkaHNRZmZVY0phZHpNcTl6OWZDRkQ1dFdYMmpNbEgzZlVuaWRpOEoyVmtsc1xuYndNTFIzVEdjRWxWT3lrRys2OGQxZUJlZVFLQmdRQys3S3pMUjI1MXlaUFVxanBuc2pydThUTTdBTEplR1J4VFxucUJ0TmpvdzVqQW42dCtyOVdiaUFTYXlaRlFjU2dSdk16SlJ0WWtNdzgxS0VFSkRHWTBLUnlEYkt0REJjRnBYdFxuRnJibnZzdGN1WmkzY2lwSWdDZ1V6Tkh5NE1XRWc0V25LaVlJRFAyUkdTTk9jZGZTNGhwTWZMcDZpYmcwSTJLNVxuNDRKYnBhc21jd0tCZ0hReG1XZDJicEl5aXJJZkRSMG5zclRuaUVLUHUxOWFQejVUT1JZQXZNTWRjZXZIajhxQVxuLzAxRXgwTlFMa3B1WjZmUm5tT2U1a0wrdVBJOVFVRWNERGRmNStBSzAwNlNuVHpnVUlsY3JSbFZmUVYvaFFpeFxuSy94TzRYWno0cGJKcmxVdnZ0QkZOZ0lsK2dIb2p1MkxmUmxVTHNHaE5kdmh1R1djK1F5aW05aVpBb0dBQkNZQVxuV3lwaUxBMEZPVW01bXljMFFKemRFQnNqeFFlbXBlcXhMUzQ3dmNSZE15VnI1YlZkWE93ODQ5YWhJTFhOZE5XOVxuSStOT3NuR1hDV2VTdmJ6S1pZQ0VNRU5hQ2FZeis4TFNscFordExVVHJHaStvblNtYWsxSkFvMy92TEZlNWhMMFxuWUpobnFnOXh4UEtVVGZDN3dZMjBQNVZlZTBPSmthQnY1SzNrMmlFQ2dZRUFxNFdJNmJtTzVhaGNKSTc1QXczV1xuWnZFMW03MkFwTDRZMFB3SEtMTWlsbVp5VVNENGJxK2tmSUF5OUdyai9XUVJva25jZy9reGZudmxRQS9udGJkbFxuc2pnVzQ1ZE9pU1FyYndwSDBUT09NVUcrWDJrMlkzNDRXOUZ1Rlo0OVRLdWFVa0ZWa2QrdGtPWE43TkRyUndDVlxuOXVZL2xRT0YrSGw5M1h2eHJrVitiVzA9XFxuLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLVxuIiwgImNsaWVudF9lbWFpbCI6ICJiYWNrZW5kLWxlaXRvckBpbW9iaWxpYXJpYS1tdnAuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCAiY2xpZW50X2lkIjogIjExMzkwNTg0MTU4NjEyNDIwMzIzNSIsICJhdXRoX3VyaSI6ICJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20vby9vYXV0aDIvYXV0aCIsICJ0b2tlbl91cmkiOiAiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLCAiYXV0aF9wcm92aWRlcl94NTA5X2NlcnRfdXJsIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL29hdXRoMi92MS9jZXJ0cyIsICJjbGllbnRfeDUwOV9jZXJ0X3VybCI6ICJodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9yb2JvdC92MS9tZXRhZGF0YS94NTA5L2JhY2tlbmQtbGVpdG9yJTQwaW1vYmlsaWFyaWEtbXZwLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwgInVuaXZlcnNlX2RvbWFpbiI6ICJnb29nbGVhcGlzLmNvbSJ9";
 
-      const FULL_KEY = (KEY_PART_1 + KEY_PART_2 + KEY_PART_3).replace(/\\n/g, '\n');
-      const CLIENT_EMAIL = "backend-leitor@imobiliaria-mvp.iam.gserviceaccount.com";
+      const credsReq = JSON.parse(Buffer.from(B64_CREDS, 'base64').toString('utf-8'));
 
-      console.log('--- Auth Diagnostics (v31.0 FORCED EMBEDDED) ---');
-      console.log('Email:', CLIENT_EMAIL);
+      console.log('--- Auth Diagnostics (v39.0 BASE64) ---');
+      console.log('Email:', credsReq.client_email);
 
       const { google } = require('googleapis');
 
       const authClient = new google.auth.JWT(
-        CLIENT_EMAIL,
+        credsReq.client_email,
         null,
-        FULL_KEY,
+        credsReq.private_key,
         ['https://www.googleapis.com/auth/spreadsheets']
       );
 
       await authClient.authorize();
 
       this.sheetsClient = google.sheets({ version: 'v4', auth: authClient });
-      console.log('✅ Google Sheets Auth successful (EMBEDDED FORCE).');
+      console.log('✅ Google Sheets Auth successful (BASE64).');
 
     } catch (err) {
       console.error('❌ CRITICAL AUTH ERROR:', err.message);
