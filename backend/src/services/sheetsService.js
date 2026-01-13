@@ -35,27 +35,42 @@ class SheetsService {
       privateKey = privateKey.slice(1, -1);
     }
 
-    console.log('Email configured:', SERVICE_ACCOUNT_EMAIL); // Log the email to check for typos
-    console.log('Key length:', PRIVATE_KEY.length);
-    console.log('Key start:', PRIVATE_KEY.substring(0, 20));
-    console.log('Key end:', PRIVATE_KEY.substring(PRIVATE_KEY.length - 20));
+    // 2. Unescape newlines
+    if (privateKey.includes('\\n')) {
+      privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+
+    const serviceEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    const scopes = ['https://www.googleapis.com/auth/spreadsheets'];
+
+    console.log('--- Auth Diagnostics (v27.0) ---');
+    console.log('Email:', serviceEmail);
+    console.log('Key Length:', privateKey ? privateKey.length : 'NULL');
 
     try {
-      const auth = new google.auth.JWT(
-        SERVICE_ACCOUNT_EMAIL,
-        null,
-        PRIVATE_KEY,
-        scopes
-      );
+      const authClient = new JWT({
+        email: serviceEmail,
+        key: privateKey,
+        scopes,
+      });
 
-      sheetsClient = google.sheets({ version: 'v4', auth });
-      console.log('✅ Google Sheets Auth successful.');
+      await authClient.authorize(); // Explicit authorization
+      this.sheetsClient = new GoogleSpreadsheet(null, authClient); // We don't set a default doc here anymore
+      // We are creating a raw client for now or sticking to GoogleSpreadsheet lib if we use its new instance methods
+      // Actually, let's use the googleapis library directly for simplicity in multi-tenant or fix the library usage.
+
+      // FIX: The previous code was mixing googleapis and google-spreadsheet.
+      // Let's stick to 'google-spreadsheet' v4 pattern or googleapis.
+      // Given the 'addLead' uses 'this.sheetsClient.spreadsheets.values.append', it implies googleapis pattern.
+      // Let's reconstruct consistent googleapis client.
+
+      const { google } = require('googleapis');
+      this.sheetsClient = google.sheets({ version: 'v4', auth: authClient });
+
+      console.log('✅ Google Sheets Auth successful (v27.0).');
     } catch (err) {
       console.error('❌ Google Sheets Auth FAILED:', err.message);
-      if (err.response) {
-        console.error('API Error Details:', JSON.stringify(err.response.data, null, 2));
-      }
-      throw err; // Re-throw so the API request fails visibly
+      throw err;
     }
   }
 
