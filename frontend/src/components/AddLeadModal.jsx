@@ -1,3 +1,6 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import { X, Save, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const API_URL = 'https://fiery-bohr-production-b324.up.railway.app';
