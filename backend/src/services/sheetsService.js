@@ -89,6 +89,14 @@ class SheetsService {
     await this.init(); // Ensure sheetsClient is initialized
 
     try {
+      // 1. Fetch Spreadsheet Metadata to get the real Sheet Name (avoid "Página1" hardcoding errors)
+      const meta = await this.sheetsClient.spreadsheets.get({
+        spreadsheetId
+      });
+
+      const firstSheetTitle = meta.data.sheets[0].properties.title;
+      console.log(`ℹ️ Detected Key Sheet: "${firstSheetTitle}"`);
+
       const values = [
         [
           data.data_entrada || new Date().toLocaleDateString('pt-BR'),
@@ -102,7 +110,7 @@ class SheetsService {
 
       const response = await this.sheetsClient.spreadsheets.values.append({
         spreadsheetId,
-        range: 'Página1!A:F', // Assuming 'Página1' and columns A-F for these fields
+        range: `${firstSheetTitle}!A:F`, // Dynamic Range
         valueInputOption: 'USER_ENTERED',
         resource: { values },
       });
