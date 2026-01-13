@@ -40,7 +40,8 @@ class SheetsService {
       privateKey = privateKey.replace(/\\n/g, '\n');
     }
 
-    const serviceEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    // Use Env Var OR Hardcoded Fallback (Bypass Railway UI issues)
+    const serviceEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || 'beckend-leitor@imobiliaria-mvp.iam.gserviceaccount.com';
     const scopes = ['https://www.googleapis.com/auth/spreadsheets'];
 
     console.log('--- Auth Diagnostics (v27.0) ---');
