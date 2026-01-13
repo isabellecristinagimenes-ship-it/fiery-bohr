@@ -95,10 +95,11 @@ const LoginPage = () => {
                     <p style={{ color: '#525252', fontSize: '0.95rem' }}>
                         Sua gestão imobiliária começa aqui.
                     </p>
-                    <p style={{ marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                        Sistema exclusivo para corretores de alta performance. <br />
-                        <span style={{ fontSize: '0.75rem', opacity: 0.7, color: '#fbbf24' }}>Versão 2.6 (UPDATE FORÇADO)</span>
-                    </p>
+                    <div style={{ textAlign: 'center', marginTop: '2rem', color: '#666', fontSize: '0.9rem' }}>
+                        <p>&copy; {new Date().getFullYear()} Imobiliária MVP. Gestão imobiliária premium.</p>
+                        <p style={{ color: '#fbbf24', fontWeight: 'bold' }}>v24.0 (DEPLOY CONFIRMADO)</p>
+                        <p style={{ fontSize: '0.8rem', opacity: 0.5 }}>Debug Path: {location.pathname}</p>
+                    </div>
                 </div>
 
                 {/* Error Message */}
