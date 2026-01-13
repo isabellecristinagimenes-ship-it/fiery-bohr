@@ -1,7 +1,7 @@
 {
   "name": "real-estate-tracker-api",
   "version": "1.0.0",
-  "description": "API Read-only para métricas imobiliárias",
+  "description": "API Read-only para métricas imobiliárias [v36 Rebuild]",
   "main": "src/app.js",
   "engines": {
     "node": ">=18.0.0"
