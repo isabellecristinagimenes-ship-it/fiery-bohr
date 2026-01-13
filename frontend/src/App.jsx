@@ -40,7 +40,7 @@ function Dashboard() {
   const [loadingRank, setLoadingRank] = useState(false);
 
   // Filter leads based on role
-  const filteredLeads = user?.role === 'admin'
+  const filteredLeads = (user?.role === 'admin' || user?.role === 'owner')
     ? leads
     : leads.filter(lead => lead.corretor === user.name); // Simple client-side filter for MVP
 
