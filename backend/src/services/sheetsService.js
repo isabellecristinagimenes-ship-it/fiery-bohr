@@ -128,6 +128,26 @@ class SheetsService {
       throw new Error(`Lead not found (Row ${rowIndex})`);
     }
 
+    // Check if stage is changing to update timestamp
+    if (data.etapa_atual && row.get('etapa_atual') !== data.etapa_atual) {
+      const now = new Date();
+      const mudancaData = new Intl.DateTimeFormat('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }).format(now);
+
+      row.assign({
+        etapa_atual: data.etapa_atual,
+        data_mudancadeetapa: mudancaData
+      });
+      console.log(`ℹ️ Stage changed. Updated timestamp: ${mudancaData}`);
+    } else if (data.etapa_atual) {
+      // Just update without timestamp change if identical (rare but possible)
+      row.assign({ etapa_atual: data.etapa_atual });
+    }
+
     // Update fields if provided in data
     if (data.nome_do_lead) row.assign({ nome_do_lead: data.nome_do_lead });
     if (data.telefone) row.assign({ telefone: data.telefone });
@@ -135,7 +155,6 @@ class SheetsService {
     if (data.valor_do_imovel) row.assign({ valor_do_imovel: data.valor_do_imovel });
     if (data.tipo_de_imovel) row.assign({ tipo_de_imovel: data.tipo_de_imovel });
     if (data.origem) row.assign({ origem: data.origem });
-    if (data.etapa_atual) row.assign({ etapa_atual: data.etapa_atual });
 
     // If updating 'imovel', we don't automatically change stage, but we could.
     // Saving...
