@@ -39,10 +39,13 @@ function Dashboard() {
   const [propRank, setPropRank] = useState([]);
   const [loadingRank, setLoadingRank] = useState(false);
 
+  // Helper for safe comparison
+  const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
+
   // Filter leads based on role
   const filteredLeads = (user?.role === 'admin' || user?.role === 'owner')
     ? leads
-    : leads.filter(lead => lead.corretor === user.name); // Simple client-side filter for MVP
+    : leads.filter(lead => normalize(lead.corretor) === normalize(user.name));
 
   const fetchData = async () => {
     setLoading(true);
@@ -273,11 +276,11 @@ function Dashboard() {
                       borderRadius: '10px',
                       fontSize: '0.75rem'
                     }}>
-                      {filteredLeads.filter(l => l.etapa_atual === stage).length}
+                      {filteredLeads.filter(l => normalize(l.etapa_atual) === normalize(stage)).length}
                     </span>
                   </div>
 
-                  {filteredLeads.filter(l => l.etapa_atual === stage).map((lead, idx) => (
+                  {filteredLeads.filter(l => normalize(l.etapa_atual) === normalize(stage)).map((lead, idx) => (
                     <div key={idx} style={{
                       background: 'rgba(255,255,255,0.05)',
                       padding: '1rem',
