@@ -214,13 +214,14 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, currentUser }) => {
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Detalhes do Interesse</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Código do Imóvel</label>
                             <input
                                 type="text"
                                 name="imovel"
                                 value={formData.imovel}
                                 onChange={handleChange}
-                                placeholder="Ex: Cond. Vista Verde"
+                                placeholder="Ex: 1234"
+                                autoComplete="off" // Disable browser suggestion
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
