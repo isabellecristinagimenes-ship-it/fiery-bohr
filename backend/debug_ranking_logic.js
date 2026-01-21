@@ -87,7 +87,7 @@ console.log('--- Stats Before Filtering ---');
 console.log(JSON.stringify(stats, null, 2));
 
 const ranking = Object.values(stats)
-    .filter(s => s.novos >= 1 && s.qualificados >= 1) // Min Threshold
+    .filter(s => s.novos >= 1 || s.qualificados >= 1 || s.visitas >= 1) // Relaxed Loop
     .sort((a, b) => b.qualificados - a.qualificados); // Simple sort
 
 console.log('--- Ranking After Filtering ---');

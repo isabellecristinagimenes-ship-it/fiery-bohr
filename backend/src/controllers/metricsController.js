@@ -287,7 +287,8 @@ class MetricsController {
       console.log('--- Stats Debug ---', JSON.stringify(stats, null, 2));
 
       const ranking = Object.values(stats)
-        .filter(s => s.novos >= 1 || s.qualificados >= 1 || s.visitas >= 1) // Relaxed Threshold: Show if ANY activity exists
+        .filter(s => true) // DEBUG: SHOW EVERYTHING
+        // .filter(s => s.novos >= 1 || s.qualificados >= 1 || s.visitas >= 1)
         .map(s => {
           const qualRatio = s.novos > 0 ? (s.qualificados / s.novos) : 0;
           const avgTime = s.qualificacoesCountForTime > 0 ? (s.totalTime / s.qualificacoesCountForTime) : 0; // 0 if N/A
