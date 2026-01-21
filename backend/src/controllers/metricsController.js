@@ -192,8 +192,18 @@ class MetricsController {
 
       leads.forEach(lead => {
         // Filter: If targetCorretor is set, skip if mismatch
-        if (targetCorretor && normalize(lead.corretor) !== normalize(targetCorretor)) {
-          return;
+        if (targetCorretor) {
+          const leadCorretor = normalize(lead.corretor);
+          const target = normalize(targetCorretor);
+
+          // LOGGING FIRST 5 ATTEMPTS
+          if (Math.random() < 0.05) { // Sample logs to avoid spam
+            console.log(`🔍 Checking Lead: '${lead.corretor}' (${leadCorretor}) vs Target: '${targetCorretor}' (${target}) -> Match? ${leadCorretor === target}`);
+          }
+
+          if (leadCorretor !== target) {
+            return;
+          }
         }
 
         const propName = lead.imovel || 'Indefinido';
