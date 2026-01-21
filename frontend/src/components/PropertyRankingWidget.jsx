@@ -27,7 +27,7 @@ const PropertyRankingWidget = ({ data, loading }) => {
                 {data.length === 0 ? (
                     <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
                         Sem imóveis qualificados neste período.<br />
-                        <span style={{ fontSize: '0.75rem' }}>(Mín. 1 novo lead + 1 qualificação)</span>
+                        <span style={{ fontSize: '0.75rem' }}>(Mín. 1 novo lead, 1 visita ou 1 qualificação)</span>
                     </p>
                 ) : (
                     data.map((prop, index) => (
