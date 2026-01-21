@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
   Users,
   Eye,
@@ -13,18 +14,15 @@ import {
   TrendingUp
 } from 'lucide-react';
 import AddLeadModal from './components/AddLeadModal';
-import EditLeadModal from './components/EditLeadModal'; // New
+import EditLeadModal from './components/EditLeadModal';
 import BrokerRankingWidget from './components/BrokerRankingWidget';
 import PropertyRankingWidget from './components/PropertyRankingWidget';
 import { AuthProvider, useAuth } from './context/AuthContext';
 // Force Rebuild
 import LoginPage from './pages/LoginPage';
-import MasterAdmin from './pages/MasterAdmin'; // Clean Restart v1.0
-
-
+import MasterAdmin from './pages/MasterAdmin';
 
 import { API_URL } from './config';
-
 
 function Dashboard() {
   const { user, logout } = useAuth();
@@ -54,16 +52,13 @@ function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // SECURITY: Send agencyId to ensure we only get our data
       const config = {
-        headers: {
-          'x-agency-id': user?.agencyId
-        }
+        headers: { 'x-agency-id': user?.agencyId }
       };
 
       const [metricsRes, leadsRes] = await Promise.all([
         axios.get(`${API_URL}/metrics/overview`, config),
-        axios.get(`${API_URL}/metrics/leads`, config) // Passed to check
+        axios.get(`${API_URL}/metrics/leads`, config)
       ]);
       setMetrics(metricsRes.data);
       setLeads(leadsRes.data);
@@ -87,10 +82,48 @@ function Dashboard() {
   };
 
   const openWhatsApp = (e, phone) => {
-    e.stopPropagation(); // Prevent opening modal when clicking WP
+    e.stopPropagation();
     const cleanPhone = phone.replace(/\D/g, '');
     window.open(`https://wa.me/${cleanPhone}`, '_blank');
   };
+
+  /* --- DRAG AND DROP HANDLER --- */
+  const onDragEnd = async (result) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+
+    const newStage = destination.droppableId;
+
+    // Optimistic Update: Update Local State immediately
+    const updatedLeads = leads.map(lead => {
+      // draggableId is String(lead.id)
+      if (String(lead.id) === draggableId) {
+        return { ...lead, etapa_atual: newStage };
+      }
+      return lead;
+    });
+
+    setLeads(updatedLeads);
+
+    try {
+      // Call Backend to Persist
+      // Using lead.id which is the row index
+      await axios.put(`${API_URL}/metrics/leads/${draggableId}`, {
+        etapa_atual: newStage,
+        agencyId: user?.agencyId
+      });
+      // Optionally fetch data again to confirm
+      // fetchData(); 
+    } catch (err) {
+      console.error("Failed to move lead", err);
+      // Revert if failed (simple way is to refetch)
+      fetchData();
+      alert("Erro ao mover card. Tente novamente.");
+    }
+  };
+
 
   const MetricCard = ({ label, value, icon: Icon, color }) => (
     <div className="metric-card">
@@ -203,33 +236,12 @@ function Dashboard() {
       ) : (
         <>
           <div className="metrics-grid">
-            <MetricCard
-              label="Total de Leads"
-              value={metrics?.total_leads || 0}
-              icon={Users}
-              color="var(--accent-blue)"
-            />
-            <MetricCard
-              label="Visitas Realizadas"
-              value={metrics?.total_visitas || 0}
-              icon={Eye}
-              color="var(--accent-purple)"
-            />
-            <MetricCard
-              label="Propostas"
-              value={metrics?.total_propostas || 0}
-              icon={FileText}
-              color="var(--accent-green)"
-            />
-            <MetricCard
-              label="Perdas"
-              value={metrics?.total_perdas || 0}
-              icon={XOctagon}
-              color="#ef4444"
-            />
+            <MetricCard label="Total de Leads" value={metrics?.total_leads || 0} icon={Users} color="var(--accent-blue)" />
+            <MetricCard label="Visitas Realizadas" value={metrics?.total_visitas || 0} icon={Eye} color="var(--accent-purple)" />
+            <MetricCard label="Propostas" value={metrics?.total_propostas || 0} icon={FileText} color="var(--accent-green)" />
+            <MetricCard label="Perdas" value={metrics?.total_perdas || 0} icon={XOctagon} color="#ef4444" />
           </div>
 
-          {/* SECTION: ADVANCED ANALYTICS (OWNER ONLY) */}
           {(user?.role === 'owner' || user?.role === 'admin') && (
             <div style={{ marginBottom: '3rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
@@ -270,79 +282,108 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="kanban-grid">
-              {stages.map((stage) => (
-                <div key={stage} className="kanban-column">
-                  <div className="column-header">
-                    {stage}
-                    <span style={{
-                      marginLeft: 'auto',
-                      background: 'rgba(99, 102, 241, 0.2)',
-                      padding: '2px 8px',
-                      borderRadius: '10px',
-                      fontSize: '0.75rem'
-                    }}>
-                      {filteredLeads.filter(l => normalize(l.etapa_atual) === normalize(stage)).length}
-                    </span>
-                  </div>
+            {/* DRAG AND DROP CONTEXT */}
+            <DragDropContext onDragEnd={onDragEnd}>
+              <div className="kanban-grid">
+                {stages.map((stage) => {
+                  const stageLeads = filteredLeads.filter(l => normalize(l.etapa_atual) === normalize(stage));
 
-                  {filteredLeads.filter(l => normalize(l.etapa_atual) === normalize(stage)).map((lead, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => setEditingLead(lead)} // OPEN EDIT MODAL
-                      style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '1rem',
-                        borderRadius: '0.75rem',
-                        border: '1px solid var(--border)',
-                        marginBottom: '1rem',
-                        cursor: 'pointer', // Show clickable
-                        transition: 'transform 0.2s',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                    >
-                      <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{lead.nome_do_lead}</div>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                        Imóvel: {lead.imovel}
-                      </div>
+                  return (
+                    <Droppable droppableId={stage} key={stage}>
+                      {(provided, snapshot) => (
+                        <div
+                          className="kanban-column"
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          style={{
+                            background: snapshot.isDraggingOver ? 'rgba(255,255,255,0.02)' : '',
+                            border: snapshot.isDraggingOver ? '1px dashed var(--primary)' : ''
+                          }}
+                        >
+                          <div className="column-header">
+                            {stage}
+                            <span style={{
+                              marginLeft: 'auto',
+                              background: 'rgba(99, 102, 241, 0.2)',
+                              padding: '2px 8px',
+                              borderRadius: '10px',
+                              fontSize: '0.75rem'
+                            }}>
+                              {stageLeads.length}
+                            </span>
+                          </div>
 
-                      {/* Show Corretor Name if Admin */}
-                      {user?.role === 'admin' && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', marginBottom: '1rem' }}>
-                          👤 {lead.corretor || 'Sem corretor'}
+                          {stageLeads.map((lead, idx) => (
+                            <Draggable
+                              key={String(lead.id)}
+                              draggableId={String(lead.id)}
+                              index={idx}
+                            >
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  onClick={() => setEditingLead(lead)}
+                                  style={{
+                                    background: 'rgba(255,255,255,0.05)',
+                                    padding: '1rem',
+                                    borderRadius: '0.75rem',
+                                    border: '1px solid var(--border)',
+                                    marginBottom: '1rem',
+                                    cursor: 'grab',
+                                    boxShadow: snapshot.isDragging ? '0 10px 20px rgba(0,0,0,0.5)' : 'none',
+                                    transform: snapshot.isDragging ? 'scale(1.05)' : 'scale(1)',
+                                    ...provided.draggableProps.style
+                                  }}
+                                >
+                                  <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{lead.nome_do_lead}</div>
+                                  <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                                    Imóvel: {lead.imovel}
+                                  </div>
+
+                                  {user?.role === 'admin' && (
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', marginBottom: '1rem' }}>
+                                      👤 {lead.corretor || 'Sem corretor'}
+                                    </div>
+                                  )}
+
+                                  <button
+                                    onClick={(e) => openWhatsApp(e, lead.telefone)}
+                                    style={{
+                                      width: '100%',
+                                      background: '#25D366',
+                                      color: '#fff',
+                                      border: 'none',
+                                      padding: '0.5rem',
+                                      borderRadius: '0.5rem',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      gap: '0.5rem',
+                                      cursor: 'pointer',
+                                      fontWeight: 600
+                                    }}
+                                  >
+                                    <MessageSquare size={16} />
+                                    WhatsApp
+                                  </button>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
                         </div>
                       )}
-
-                      <button
-                        onClick={(e) => openWhatsApp(e, lead.telefone)}
-                        style={{
-                          width: '100%',
-                          background: '#25D366',
-                          color: '#fff',
-                          border: 'none',
-                          padding: '0.5rem',
-                          borderRadius: '0.5rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.5rem',
-                          cursor: 'pointer',
-                          fontWeight: 600
-                        }}
-                      >
-                        <MessageSquare size={16} />
-                        WhatsApp
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+                    </Droppable>
+                  );
+                })}
+              </div>
+            </DragDropContext>
           </div>
         </>
       )}
-      {/* Modal de Novo Lead */}
+
       <AddLeadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -350,7 +391,6 @@ function Dashboard() {
         currentUser={user}
       />
 
-      {/* Modal de Editar Lead */}
       <EditLeadModal
         isOpen={!!editingLead}
         onClose={() => setEditingLead(null)}
@@ -367,7 +407,6 @@ function AppContent() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
   if (currentPath.includes('/god-mode-v1') || currentPath.includes('/master')) {
-    console.log("GOD MODE ACTIVATED");
     return <MasterAdmin />;
   }
 
