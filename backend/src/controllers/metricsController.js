@@ -200,8 +200,10 @@ class MetricsController {
           if (Math.random() < 0.05) { // Sample logs to avoid spam
             console.log(`🔍 Checking Lead: '${lead.corretor}' (${leadCorretor}) vs Target: '${targetCorretor}' (${target}) -> Match? ${leadCorretor === target}`);
           }
+          // Relaxed matcher: check if one contains the other (e.g. 'Isa' matches 'Isabelle')
+          const match = leadCorretor === target || leadCorretor.includes(target) || target.includes(leadCorretor);
 
-          if (leadCorretor !== target) {
+          if (!match) {
             return;
           }
         }

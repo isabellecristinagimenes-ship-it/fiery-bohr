@@ -20,11 +20,22 @@ async function inspectSheet() {
 
         console.log(`Loaded ${rows.length} rows.`);
 
+        const target = 'isa';
         rows.forEach((row, index) => {
-            const imovel = row.get('imovel');
-            const corretor = row.get('corretor');
-            if (corretor && corretor.toLowerCase() === 'isa') {
-                console.log(`Row ${index + 2}: Imovel=${imovel}, Corretor=${corretor}, DataEntrada='${row.get('data_entrada')}', Etapa='${row.get('etapa_atual')}'`);
+            const imovel = row.get('imovel') || row.get('Imóvel');
+            const corretor = row.get('corretor') || row.get('Corretor');
+
+            if (corretor) {
+                const cNorm = corretor.toLowerCase().trim();
+                const tNorm = target.toLowerCase().trim();
+
+                const match = cNorm === tNorm;
+
+                if (match || cNorm.includes(tNorm)) {
+                    console.log(`✅ Row ${index + 2} MATCH: '${corretor}' matches '${target}'`);
+                } else {
+                    console.log(`❌ Row ${index + 2} FAIL: '${corretor}' (Hex: ${Buffer.from(corretor).toString('hex')}) vs '${target}'`);
+                }
             }
         });
 
