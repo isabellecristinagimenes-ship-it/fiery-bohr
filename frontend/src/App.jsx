@@ -85,7 +85,12 @@ function Dashboard() {
         start.setDate(end.getDate() - period);
       }
 
-      const query = `?startDate=${start.toISOString()}&endDate=${end.toISOString()}`;
+      let query = `?startDate=${start.toISOString()}&endDate=${end.toISOString()}`;
+
+      // If NOT admin/owner, filter by their name
+      if (user?.role !== 'admin' && user?.role !== 'owner') {
+        query += `&corretor=${encodeURIComponent(user.name)}`;
+      }
 
       // We only implemented Property Ranking fully.
       const propRes = await axios.get(`${API_URL}/metrics/ranking/property${query}`, config);
