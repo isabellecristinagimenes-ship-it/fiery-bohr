@@ -69,20 +69,25 @@ function Dashboard() {
   };
 
   const fetchRankings = async () => {
-    if (user?.role !== 'admin' && user?.role !== 'owner') return;
+    // Show for everyone now, functionality requested by user
+    // if (user?.role !== 'admin' && user?.role !== 'owner') return;
 
     setLoadingRank(true);
     try {
       const config = { headers: { 'x-agency-id': user?.agencyId } };
 
       const end = new Date();
-      const start = new Date();
-      start.setDate(end.getDate() - period);
+      let start = new Date();
+
+      if (period === 'current_year') {
+        start = new Date(new Date().getFullYear(), 0, 1); // Jan 1st of current year
+      } else {
+        start.setDate(end.getDate() - period);
+      }
 
       const query = `?startDate=${start.toISOString()}&endDate=${end.toISOString()}`;
 
-      // We only implemented Property Ranking fully. Broker Ranking uses old logic or event logic.
-      // Let's try fetching both if endpoints exist.
+      // We only implemented Property Ranking fully.
       const propRes = await axios.get(`${API_URL}/metrics/ranking/property${query}`, config);
       setPropRank(propRes.data);
 
@@ -91,7 +96,7 @@ function Dashboard() {
         const brokerRes = await axios.get(`${API_URL}/metrics/ranking/brokers${query}`, config);
         setBrokerRank(brokerRes.data);
       } catch (e) {
-        console.warn("Broker ranking fetch failed or not impl", e);
+        // console.warn("Broker ranking fetch failed or not impl", e);
       }
 
     } catch (err) {
@@ -277,37 +282,39 @@ function Dashboard() {
             <MetricCard label="Perdas" value={metrics?.total_perdas || 0} icon={XOctagon} color="#ef4444" />
           </div>
 
-          {(user?.role === 'owner' || user?.role === 'admin') && (
-            <div style={{ marginBottom: '3rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <TrendingUp size={24} color="var(--accent-gold)" />
-                  Performance da Agência
-                </h2>
-                <select
-                  value={period}
-                  onChange={(e) => setPeriod(Number(e.target.value))}
-                  style={{
-                    background: 'var(--bg-card)',
-                    color: 'var(--text-main)',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '0.5rem',
-                    border: '1px solid var(--border)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value={7}>Últimos 7 dias</option>
-                  <option value={30}>Últimos 30 dias</option>
-                  <option value={90}>Últimos 3 meses</option>
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                <BrokerRankingWidget data={brokerRank} loading={loadingRank} />
-                <PropertyRankingWidget data={propRank} loading={loadingRank} />
-              </div>
+          <div style={{ marginBottom: '3rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <TrendingUp size={24} color="var(--accent-gold)" />
+                Performance da Agência
+              </h2>
+              <select
+                value={period}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPeriod(val === 'current_year' ? 'current_year' : Number(val));
+                }}
+                style={{
+                  background: 'var(--bg-card)',
+                  color: 'var(--text-main)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border)',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value={7}>Últimos 7 dias</option>
+                <option value={30}>Últimos 30 dias</option>
+                <option value={90}>Últimos 3 meses</option>
+                <option value="current_year">Este Ano</option>
+              </select>
             </div>
-          )}
+
+            <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+              <BrokerRankingWidget data={brokerRank} loading={loadingRank} />
+              <PropertyRankingWidget data={propRank} loading={loadingRank} />
+            </div>
+          </div>
 
           <div className="kanban-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
