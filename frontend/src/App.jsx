@@ -52,10 +52,7 @@ function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const config = {
-        headers: { 'x-agency-id': user?.agencyId }
-      };
-
+      const config = { headers: { 'x-agency-id': user?.agencyId } };
       const [metricsRes, leadsRes] = await Promise.all([
         axios.get(`${API_URL}/metrics/overview`, config),
         axios.get(`${API_URL}/metrics/leads`, config)
@@ -71,9 +68,47 @@ function Dashboard() {
     }
   };
 
+  const fetchRankings = async () => {
+    if (user?.role !== 'admin' && user?.role !== 'owner') return;
+
+    setLoadingRank(true);
+    try {
+      const config = { headers: { 'x-agency-id': user?.agencyId } };
+
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - period);
+
+      const query = `?startDate=${start.toISOString()}&endDate=${end.toISOString()}`;
+
+      // We only implemented Property Ranking fully. Broker Ranking uses old logic or event logic.
+      // Let's try fetching both if endpoints exist.
+      const propRes = await axios.get(`${API_URL}/metrics/ranking/property${query}`, config);
+      setPropRank(propRes.data);
+
+      // Optional: Broker Ranking (if endpoint exists)
+      try {
+        const brokerRes = await axios.get(`${API_URL}/metrics/ranking/brokers${query}`, config);
+        setBrokerRank(brokerRes.data);
+      } catch (e) {
+        console.warn("Broker ranking fetch failed or not impl", e);
+      }
+
+    } catch (err) {
+      console.error('Error fetching rankings:', err);
+    } finally {
+      setLoadingRank(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Fetch rankings when period changes
+  useEffect(() => {
+    fetchRankings();
+  }, [period]); // Run on mount (initial 30) and update
 
   const handleModalSuccess = () => {
     setIsModalOpen(false);
