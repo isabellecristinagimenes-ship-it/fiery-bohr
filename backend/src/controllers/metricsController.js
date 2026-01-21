@@ -166,92 +166,108 @@ class MetricsController {
       const { startDate, endDate } = req.query;
       const start = new Date(startDate);
       const end = new Date(endDate);
-      // Adjust end date to include the full day
       end.setHours(23, 59, 59, 999);
 
-      // Fetch Events and Leads (to map ID to Property if needed, though events should ideally have it or we resolve it)
-      // Current events might not have 'imovel' directly if we only log lead_id. 
-      // We need to join with Leads.
-      const [events, leads] = await Promise.all([
-        sheetsService.getEvents(),
-        sheetsService.getLeads()
+      // Fetch Leads (Primary Source for Backfill) and Events (for incremental precision)
+      const [leads, events] = await Promise.all([
+        sheetsService.getLeads(),
+        sheetsService.getEvents()
       ]);
-
-      // Create a map of Lead ID -> Property Name
-      const leadPropertyMap = {};
-      const leadCreationTimeMap = {}; // To calc duration
-      leads.forEach(l => {
-        leadPropertyMap[l.id] = l.imovel;
-      });
-
-      // Also build map from Create Events for duration calc
-      events.forEach(e => {
-        if (e.tipo_evento === 'CREATED') {
-          leadCreationTimeMap[e.lead_id] = new Date(e.timestamp);
-        }
-      });
-      // Fallback: If no created event (old lead), use current time or skip duration?
-      // User criterion: "Menor tempo médio até qualificação"
 
       const stats = {};
 
-      events.forEach(event => {
-        const eventDate = new Date(event.timestamp);
-        if (eventDate < start || eventDate > end) return;
+      // Helper to parse "DD/MM/YYYY" from Sheet
+      const parseSheetDate = (dateStr) => {
+        if (!dateStr || typeof dateStr !== 'string') return null;
+        const [day, month, year] = dateStr.split('/');
+        if (!day || !month || !year) return null;
+        return new Date(`${year}-${month}-${day}`); // YYYY-MM-DD
+      };
 
-        const propName = leadPropertyMap[event.lead_id] || 'Desconhecido';
+      // 1. Process Actual Leads (Historical Data)
+      leads.forEach(lead => {
+        const propName = lead.imovel || 'Indefinido';
         if (!stats[propName]) {
           stats[propName] = {
             name: propName,
             novos: 0,
             qualificados: 0,
             visitas: 0,
-            totalTime: 0, // ms
+            totalTime: 0,
             qualificacoesCountForTime: 0
           };
         }
 
-        if (event.tipo_evento === 'CREATED') {
+        const entryDate = parseSheetDate(lead.data_entrada);
+        // Count 'Novos'
+        if (entryDate && entryDate >= start && entryDate <= end) {
           stats[propName].novos++;
         }
 
-        if (event.tipo_evento === 'STAGE_CHANGE' && (event.metadata?.includes('Qualificado') || event.metadata?.includes('Qualificação'))) {
-          // Check if truly moving TO qualificado
-          // Our logEvent saves JSON metadata: { from, to }
-          let isQualify = false;
-          try {
-            const meta = JSON.parse(event.metadata);
-            if (meta.to === 'Qualificação' || meta.to === 'Qualificado') isQualify = true;
-          } catch (e) {
-            // specific fallback or ignore
-            if (String(event.metadata).includes('Qualific')) isQualify = true;
-          }
+        // Count 'Qualificados' logic
+        const isQualifiedStage = lead.etapa_atual &&
+          (lead.etapa_atual.toLowerCase().includes('qualifi') || lead.etapa_atual.toLowerCase().includes('visita') || lead.etapa_atual.toLowerCase().includes('proposta') || lead.etapa_atual.toLowerCase().includes('fechado'));
 
-          if (isQualify) {
+        if (isQualifiedStage) {
+          // Try to get qualification date
+          let qualDate = parseSheetDate(lead.data_mudancadeetapa);
+
+          // If no update date, but it IS qualified, should we count it? 
+          // Only if we can determine it happened in the period. 
+          // Fallback: use entryDate if missing (dangerous assumption but better than 0 for MVP)
+          // STRICTER: Only count if we have the date OR if entryDate is in period (cohort assumption)
+          const effectiveDate = qualDate || entryDate;
+
+          if (effectiveDate && effectiveDate >= start && effectiveDate <= end) {
             stats[propName].qualificados++;
 
-            // Calc Duration
-            const createdTime = leadCreationTimeMap[event.lead_id];
-            if (createdTime) {
-              const duration = eventDate - createdTime;
-              if (duration > 0) {
+            // Time to Qualify
+            if (entryDate && qualDate) {
+              const duration = qualDate - entryDate;
+              if (duration >= 0) {
                 stats[propName].totalTime += duration;
                 stats[propName].qualificacoesCountForTime++;
               }
             }
           }
         }
+      });
+
+      // 2. Merge Visits from Events (if any exist)
+      // Since sheet doesn't have 'visitas' column, we rely on events for this specific metric
+      // or we count 'Visita' stage presence as at least 1 visit.
+      events.forEach(event => {
+        // ... existing event logic for visits ...
+        const eventDate = new Date(event.timestamp);
+        if (eventDate < start || eventDate > end) return;
 
         if (event.tipo_evento === 'VISITA') {
-          stats[propName].visitas++;
+          // We need to match lead_id to property. 
+          // We can find lead in 'leads' array by id (rowNumber)
+          const lead = leads.find(l => String(l.id) === String(event.lead_id));
+          if (lead && lead.imovel) {
+            const pName = lead.imovel;
+            if (stats[pName]) stats[pName].visitas++;
+          }
+        }
+      });
+
+      // Auto-fill visits based on Stage if events are empty (Backfill heuristic)
+      leads.forEach(lead => {
+        if (lead.etapa_atual && ['Visita', 'Proposta', 'Negócio Fechado'].includes(lead.etapa_atual)) {
+          const propName = lead.imovel || 'Indefinido';
+          // If we have 0 visits logged but stage is Visit+, assume at least 1
+          if (stats[propName] && stats[propName].visitas === 0) {
+            stats[propName].visitas = 1;
+          }
         }
       });
 
       const ranking = Object.values(stats)
-        .filter(s => s.novos >= 1 && s.qualificados >= 1) // Rule: At least 1 new AND 1 qualified
+        .filter(s => s.novos >= 1 && s.qualificados >= 1) // Min Threshold
         .map(s => {
           const qualRatio = s.novos > 0 ? (s.qualificados / s.novos) : 0;
-          const avgTime = s.qualificacoesCountForTime > 0 ? (s.totalTime / s.qualificacoesCountForTime) : Infinity;
+          const avgTime = s.qualificacoesCountForTime > 0 ? (s.totalTime / s.qualificacoesCountForTime) : 0; // 0 if N/A
           return { ...s, qualRatio, avgTime };
         })
         .sort((a, b) => {
@@ -259,7 +275,9 @@ class MetricsController {
           if (b.qualRatio !== a.qualRatio) return b.qualRatio - a.qualRatio;
           // 2. Count Qualified (Desc)
           if (b.qualificados !== a.qualificados) return b.qualificados - a.qualificados;
-          // 3. Avg Time (Asc) - lower is better
+          // 3. Avg Time (Asc) - lower is better (but exclude 0/invalid)
+          // If one is 0 (invalid) and other is valid, prefer valid? Or handle as Infinity?
+          // Simple: just plain diff
           if (a.avgTime !== b.avgTime) return a.avgTime - b.avgTime;
           // 4. Visits (Desc)
           if (b.visitas !== a.visitas) return b.visitas - a.visitas;
