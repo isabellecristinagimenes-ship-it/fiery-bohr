@@ -128,18 +128,20 @@ class SheetsService {
       const firstSheetTitle = meta.data.sheets[0].properties.title;
       console.log(`ℹ️ Detected Key Sheet: "${firstSheetTitle}"`);
 
-      // MAPPING UPDATE: Must match sheet headers exactly
-      // Headers detected: nome_do_lead, telefone, data_entrada, data_mudancadeetapa, etapa_atual, imovel, corretor, origem
+      // MAPPING UPDATE: Including all fields
+      // Headers: nome_do_lead, telefone, data_entrada, data_mudancadeetapa, etapa_atual, imovel, corretor, origem, valor_do_imovel, tipo_de_imovel
       const values = [
         [
           data.nome_do_lead,                                          // Col A: nome_do_lead
           data.telefone,                                              // Col B: telefone
           data.data_entrada || new Date().toLocaleDateString('pt-BR'),// Col C: data_entrada
-          '',                                                         // Col D: data_mudancadeetapa (Empty initially)
-          data.etapa_atual || 'Novo Lead',                            // Col E: etapa_atual (Was 'Novo' but 'Novo Lead' matches Kanban)
+          '',                                                         // Col D: data_mudancadeetapa
+          data.etapa_atual || 'Novo Lead',                            // Col E: etapa_atual
           data.imovel || 'Interesse Geral',                           // Col F: imovel
           data.corretor || 'Sistema',                                 // Col G: corretor
-          'Manual'                                                    // Col H: origem
+          data.origem || 'Manual',                                    // Col H: origem (Dynamic now)
+          data.valor_do_imovel || '',                                 // Col I: valor_do_imovel
+          data.tipo_de_imovel || ''                                   // Col J: tipo_de_imovel
         ]
       ];
 
