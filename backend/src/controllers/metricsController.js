@@ -185,7 +185,17 @@ class MetricsController {
       };
 
       // 1. Process Actual Leads (Historical Data)
+      // Filter by Corretor if requested
+      const targetCorretor = req.query.corretor;
+
+      const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
+
       leads.forEach(lead => {
+        // Filter: If targetCorretor is set, skip if mismatch
+        if (targetCorretor && normalize(lead.corretor) !== normalize(targetCorretor)) {
+          return;
+        }
+
         const propName = lead.imovel || 'Indefinido';
         if (!stats[propName]) {
           stats[propName] = {
@@ -245,6 +255,12 @@ class MetricsController {
           // We need to match lead_id to property. 
           // We can find lead in 'leads' array by id (rowNumber)
           const lead = leads.find(l => String(l.id) === String(event.lead_id));
+
+          // Strict Filter for events too
+          if (targetCorretor && lead && normalize(lead.corretor) !== normalize(targetCorretor)) {
+            return;
+          }
+
           if (lead && lead.imovel) {
             const pName = lead.imovel;
             if (stats[pName]) stats[pName].visitas++;
@@ -254,6 +270,11 @@ class MetricsController {
 
       // Auto-fill visits based on Stage if events are empty (Backfill heuristic)
       leads.forEach(lead => {
+        // Filter again for this loop
+        if (targetCorretor && normalize(lead.corretor) !== normalize(targetCorretor)) {
+          return;
+        }
+
         if (lead.etapa_atual && ['Visita', 'Proposta', 'Negócio Fechado'].includes(lead.etapa_atual)) {
           const propName = lead.imovel || 'Indefinido';
           // If we have 0 visits logged but stage is Visit+, assume at least 1
@@ -264,7 +285,7 @@ class MetricsController {
       });
 
       const ranking = Object.values(stats)
-        .filter(s => s.novos >= 1 && s.qualificados >= 1) // Min Threshold
+        .filter(s => s.novos >= 1 || s.qualificados >= 1 || s.visitas >= 1) // Relaxed Threshold: Show if ANY activity exists
         .map(s => {
           const qualRatio = s.novos > 0 ? (s.qualificados / s.novos) : 0;
           const avgTime = s.qualificacoesCountForTime > 0 ? (s.totalTime / s.qualificacoesCountForTime) : 0; // 0 if N/A
