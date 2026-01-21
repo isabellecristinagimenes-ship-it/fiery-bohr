@@ -130,11 +130,21 @@ class SheetsService {
 
       // MAPPING UPDATE: Including all fields
       // Headers: nome_do_lead, telefone, data_entrada, data_mudancadeetapa, etapa_atual, imovel, corretor, origem, valor_do_imovel, tipo_de_imovel
+
+      // Fix Date Timezone (Server is UTC, User is BRT)
+      const now = new Date();
+      const dataEntrada = data.data_entrada || new Intl.DateTimeFormat('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }).format(now);
+
       const values = [
         [
           data.nome_do_lead,                                          // Col A: nome_do_lead
           data.telefone,                                              // Col B: telefone
-          data.data_entrada || new Date().toLocaleDateString('pt-BR'),// Col C: data_entrada
+          dataEntrada,                                                // Col C: data_entrada (Fixed TZ)
           '',                                                         // Col D: data_mudancadeetapa
           data.etapa_atual || 'Novo Lead',                            // Col E: etapa_atual
           data.imovel || 'Interesse Geral',                           // Col F: imovel
