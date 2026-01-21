@@ -38,7 +38,7 @@ class MetricsController {
 
   async addLead(req, res) {
     try {
-      const { nome_do_lead, telefone, agencyId, corretor } = req.body;
+      const { nome_do_lead, telefone, agencyId, corretor, imovel, tipo_de_imovel, valor_do_imovel, origem } = req.body;
 
       if (!nome_do_lead) {
         return res.status(400).json({ error: 'Nome do lead é obrigatório' });
@@ -58,7 +58,10 @@ class MetricsController {
         nome_do_lead,
         telefone,
         corretor,
-        imovel: 'Interesse Geral'
+        imovel: imovel || 'Interesse Geral', // Use provided value or fallback
+        tipo_de_imovel,
+        valor_do_imovel,
+        origem
       }, agency.spreadsheetId);
 
       // Create directly in DB for SaaS
