@@ -96,19 +96,25 @@ class SheetsService {
 
     // Ler linhas
     const rows = await sheet.getRows();
-    return rows.map(row => ({
-      id: row._rowNumber, // Expose Row Number as ID for updates
-      nome_do_lead: row.get('nome_do_lead'),
-      telefone: row.get('telefone'),
-      data_entrada: row.get('data_entrada'),
-      data_mudancadeetapa: row.get('data_mudancadeetapa'),
-      etapa_atual: row.get('etapa_atual'),
-      imovel: row.get('imovel'),
-      corretor: row.get('corretor'),
-      origem: row.get('origem'),
-      valor_do_imovel: row.get('valor_do_imovel'),
-      tipo_de_imovel: row.get('tipo_de_imovel')
-    }));
+    return rows.map(row => {
+      // Robust Getter Helper
+      const get = (key) => row.get(key) || row.get(key.charAt(0).toUpperCase() + key.slice(1)) || row.get(key.toUpperCase());
+
+      return {
+        id: row._rowNumber,
+        nome_do_lead: get('nome_do_lead') || get('Nome do Lead'),
+        email: get('email'),
+        telefone: get('telefone'),
+        imovel: get('imovel') || get('Imóvel') || get('Cód. Imóvel'),
+        corretor: get('corretor'),
+        etapa_atual: get('etapa_atual') || get('Etapa'),
+        data_entrada: get('data_entrada') || get('Data Entrada'),
+        data_mudancadeetapa: get('data_mudancadeetapa') || '',
+        origem: get('origem'),
+        valor: get('valor'),
+        tipo: get('tipo')
+      };
+    });
   }
 
   async updateLead(rowIndex, data, spreadsheetId) {
