@@ -13,6 +13,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import AddLeadModal from './components/AddLeadModal';
+import EditLeadModal from './components/EditLeadModal'; // New
 import BrokerRankingWidget from './components/BrokerRankingWidget';
 import PropertyRankingWidget from './components/PropertyRankingWidget';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -32,6 +33,9 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Edit State
+  const [editingLead, setEditingLead] = useState(null);
 
   // Analytics State
   const [period, setPeriod] = useState(30);
@@ -78,10 +82,12 @@ function Dashboard() {
 
   const handleModalSuccess = () => {
     setIsModalOpen(false);
+    setEditingLead(null);
     fetchData();
   };
 
-  const openWhatsApp = (phone) => {
+  const openWhatsApp = (e, phone) => {
+    e.stopPropagation(); // Prevent opening modal when clicking WP
     const cleanPhone = phone.replace(/\D/g, '');
     window.open(`https://wa.me/${cleanPhone}`, '_blank');
   };
@@ -281,13 +287,21 @@ function Dashboard() {
                   </div>
 
                   {filteredLeads.filter(l => normalize(l.etapa_atual) === normalize(stage)).map((lead, idx) => (
-                    <div key={idx} style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      padding: '1rem',
-                      borderRadius: '0.75rem',
-                      border: '1px solid var(--border)',
-                      marginBottom: '1rem'
-                    }}>
+                    <div
+                      key={idx}
+                      onClick={() => setEditingLead(lead)} // OPEN EDIT MODAL
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        padding: '1rem',
+                        borderRadius: '0.75rem',
+                        border: '1px solid var(--border)',
+                        marginBottom: '1rem',
+                        cursor: 'pointer', // Show clickable
+                        transition: 'transform 0.2s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
                       <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{lead.nome_do_lead}</div>
                       <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                         Imóvel: {lead.imovel}
@@ -301,7 +315,7 @@ function Dashboard() {
                       )}
 
                       <button
-                        onClick={() => openWhatsApp(lead.telefone)}
+                        onClick={(e) => openWhatsApp(e, lead.telefone)}
                         style={{
                           width: '100%',
                           background: '#25D366',
@@ -334,6 +348,15 @@ function Dashboard() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleModalSuccess}
         currentUser={user}
+      />
+
+      {/* Modal de Editar Lead */}
+      <EditLeadModal
+        isOpen={!!editingLead}
+        onClose={() => setEditingLead(null)}
+        onSuccess={handleModalSuccess}
+        currentUser={user}
+        lead={editingLead}
       />
     </div>
   );

@@ -97,6 +97,7 @@ class SheetsService {
     // Ler linhas
     const rows = await sheet.getRows();
     return rows.map(row => ({
+      id: row._rowNumber, // Expose Row Number as ID for updates
       nome_do_lead: row.get('nome_do_lead'),
       telefone: row.get('telefone'),
       data_entrada: row.get('data_entrada'),
@@ -108,6 +109,39 @@ class SheetsService {
       valor_do_imovel: row.get('valor_do_imovel'),
       tipo_de_imovel: row.get('tipo_de_imovel')
     }));
+  }
+
+  async updateLead(rowIndex, data, spreadsheetId) {
+    await this.init(spreadsheetId);
+
+    // Safety check for ID
+    if (!rowIndex) throw new Error('Row Index is required for update');
+
+    const sheet = this._getSheet('leads');
+    const rows = await sheet.getRows();
+
+    // Find row by index (Note: _rowNumber is 1-based, array is 0-based, but google-spreadsheet rows don't map perfectly 1:1 if filtered)
+    // Safest way: Find the row object with the matching _rowNumber
+    const row = rows.find(r => r._rowNumber === parseInt(rowIndex));
+
+    if (!row) {
+      throw new Error(`Lead not found (Row ${rowIndex})`);
+    }
+
+    // Update fields if provided in data
+    if (data.nome_do_lead) row.assign({ nome_do_lead: data.nome_do_lead });
+    if (data.telefone) row.assign({ telefone: data.telefone });
+    if (data.imovel) row.assign({ imovel: data.imovel });
+    if (data.valor_do_imovel) row.assign({ valor_do_imovel: data.valor_do_imovel });
+    if (data.tipo_de_imovel) row.assign({ tipo_de_imovel: data.tipo_de_imovel });
+    if (data.origem) row.assign({ origem: data.origem });
+    if (data.etapa_atual) row.assign({ etapa_atual: data.etapa_atual });
+
+    // If updating 'imovel', we don't automatically change stage, but we could.
+    // Saving...
+    await row.save();
+    console.log(`✅ Updated Lead at Row ${rowIndex}`);
+    return { success: true };
   }
 
   async addLead(data, spreadsheetId) {

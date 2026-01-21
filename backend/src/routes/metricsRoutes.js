@@ -7,5 +7,6 @@ router.get('/leads', (req, res) => metricsController.getLeads(req, res));
 router.get('/ranking/brokers', (req, res) => metricsController.getBrokerRanking(req, res));
 router.get('/ranking/properties', (req, res) => metricsController.getPropertyRanking(req, res));
 router.post('/leads', (req, res) => metricsController.addLead(req, res));
+router.put('/leads/:id', (req, res) => metricsController.updateLead(req, res));
 
 module.exports = router;
