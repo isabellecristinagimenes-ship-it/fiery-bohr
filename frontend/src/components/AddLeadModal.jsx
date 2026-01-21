@@ -251,7 +251,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, currentUser }) => {
                             <option value="">Selecione...</option>
                             <option value="Indicação">Indicação</option>
                             <option value="Placa / Passante">Placa / Passante</option>
-                            <option value="Cliente antigo">Cliente antigo</option>
+                            {/* <option value="Cliente antigo">Cliente antigo</option> -- REMOVED BY USER REQUEST */}
                             <option value="Parceria">Parceria</option>
                             <option value="Portais imobiliários">Portais imobiliários</option>
                             <option value="Outro">Outro</option>
