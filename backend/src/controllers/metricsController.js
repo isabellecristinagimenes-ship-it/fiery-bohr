@@ -88,117 +88,116 @@ class MetricsController {
       res.status(500).json({ error: error.message || 'Erro ao salvar lead' });
     }
   }
-}
 
   async updateLead(req, res) {
-  try {
-    const { id } = req.params; // This is the Row Index
-    const { agencyId, ...updateData } = req.body;
+    try {
+      const { id } = req.params; // This is the Row Index
+      const { agencyId, ...updateData } = req.body;
 
-    console.log(`DEBUG: Updating Lead ID (Row): ${id}`, updateData);
+      console.log(`DEBUG: Updating Lead ID (Row): ${id}`, updateData);
 
-    // In real SaaS, check agencyId permissions. 
-    // For now, we trust the frontend sends the right ID.
+      // In real SaaS, check agencyId permissions. 
+      // For now, we trust the frontend sends the right ID.
 
-    // If agencyId is passed, we could fetch specific sheet ID, 
-    // but init() falls back to env so it works for MVP.
-    let targetSpreadsheetId = null;
-    if (agencyId) {
-      const agency = await db.Agency.findByPk(agencyId);
-      if (agency) targetSpreadsheetId = agency.spreadsheetId;
+      // If agencyId is passed, we could fetch specific sheet ID, 
+      // but init() falls back to env so it works for MVP.
+      let targetSpreadsheetId = null;
+      if (agencyId) {
+        const agency = await db.Agency.findByPk(agencyId);
+        if (agency) targetSpreadsheetId = agency.spreadsheetId;
+      }
+
+      await sheetsService.updateLead(id, updateData, targetSpreadsheetId);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error updating lead:', error);
+      res.status(500).json({ error: error.message || 'Error updating lead' });
     }
-
-    await sheetsService.updateLead(id, updateData, targetSpreadsheetId);
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error updating lead:', error);
-    res.status(500).json({ error: error.message || 'Error updating lead' });
   }
-}
 
   // --- ANALYTICS: Broker Ranking ---
   async getBrokerRanking(req, res) {
-  try {
-    const agencyId = req.headers['x-agency-id'] || req.query.agencyId;
-    const { startDate, endDate } = req.query;
+    try {
+      const agencyId = req.headers['x-agency-id'] || req.query.agencyId;
+      const { startDate, endDate } = req.query;
 
-    const events = await db.LeadEvent.findAll({
-      where: {
-        agencyId,
-        createdAt: { [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)] }
-      },
-      include: [{ model: db.Lead, as: 'lead' }]
-    });
+      const events = await db.LeadEvent.findAll({
+        where: {
+          agencyId,
+          createdAt: { [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)] }
+        },
+        include: [{ model: db.Lead, as: 'lead' }]
+      });
 
-    const brokerStats = {};
+      const brokerStats = {};
 
-    events.forEach(event => {
-      const brokerName = event.lead ? event.lead.corretor : 'Unknown';
-      if (!brokerStats[brokerName]) brokerStats[brokerName] = { newLeads: 0, qualified: 0, visits: 0 };
+      events.forEach(event => {
+        const brokerName = event.lead ? event.lead.corretor : 'Unknown';
+        if (!brokerStats[brokerName]) brokerStats[brokerName] = { newLeads: 0, qualified: 0, visits: 0 };
 
-      if (event.type === 'CREATED') brokerStats[brokerName].newLeads++;
-      if (event.type === 'STAGE_CHANGE' && event.metadata?.to === 'Qualificado') brokerStats[brokerName].qualified++;
-      if (event.type === 'VISIT') brokerStats[brokerName].visits++;
-    });
+        if (event.type === 'CREATED') brokerStats[brokerName].newLeads++;
+        if (event.type === 'STAGE_CHANGE' && event.metadata?.to === 'Qualificado') brokerStats[brokerName].qualified++;
+        if (event.type === 'VISIT') brokerStats[brokerName].visits++;
+      });
 
-    const ranking = Object.entries(brokerStats)
-      .filter(([_, stats]) => stats.newLeads >= 1)
-      .map(([name, stats]) => {
-        const qualRatio = stats.newLeads > 0 ? (stats.qualified / stats.newLeads) : 0;
-        const visitRatio = stats.qualified > 0 ? (stats.visits / stats.qualified) : 0;
-        const finalScore = (qualRatio * 0.5) + (visitRatio * 0.5);
-        return { name, ...stats, finalScore };
-      })
-      .sort((a, b) => b.finalScore - a.finalScore)
-      .slice(0, 3);
+      const ranking = Object.entries(brokerStats)
+        .filter(([_, stats]) => stats.newLeads >= 1)
+        .map(([name, stats]) => {
+          const qualRatio = stats.newLeads > 0 ? (stats.qualified / stats.newLeads) : 0;
+          const visitRatio = stats.qualified > 0 ? (stats.visits / stats.qualified) : 0;
+          const finalScore = (qualRatio * 0.5) + (visitRatio * 0.5);
+          return { name, ...stats, finalScore };
+        })
+        .sort((a, b) => b.finalScore - a.finalScore)
+        .slice(0, 3);
 
-    res.json(ranking);
-  } catch (error) {
-    console.error('Ranking Error:', error);
-    res.status(500).json({ error: 'Erro ao calcular ranking' });
+      res.json(ranking);
+    } catch (error) {
+      console.error('Ranking Error:', error);
+      res.status(500).json({ error: 'Erro ao calcular ranking' });
+    }
   }
-}
 
   // --- ANALYTICS: Property Ranking ---
   async getPropertyRanking(req, res) {
-  try {
-    const agencyId = req.headers['x-agency-id'] || req.query.agencyId;
-    const { startDate, endDate } = req.query;
+    try {
+      const agencyId = req.headers['x-agency-id'] || req.query.agencyId;
+      const { startDate, endDate } = req.query;
 
-    const events = await db.LeadEvent.findAll({
-      where: {
-        agencyId,
-        createdAt: { [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)] }
-      },
-      include: [{ model: db.Lead, as: 'lead' }]
-    });
+      const events = await db.LeadEvent.findAll({
+        where: {
+          agencyId,
+          createdAt: { [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)] }
+        },
+        include: [{ model: db.Lead, as: 'lead' }]
+      });
 
-    const propStats = {};
+      const propStats = {};
 
-    events.forEach(event => {
-      const propName = event.lead ? event.lead.imovel : 'Unknown';
-      if (!propStats[propName]) propStats[propName] = { newLeads: 0, qualified: 0 };
+      events.forEach(event => {
+        const propName = event.lead ? event.lead.imovel : 'Unknown';
+        if (!propStats[propName]) propStats[propName] = { newLeads: 0, qualified: 0 };
 
-      if (event.type === 'CREATED') propStats[propName].newLeads++;
-      if (event.type === 'STAGE_CHANGE' && event.metadata?.to === 'Qualificado') propStats[propName].qualified++;
-    });
+        if (event.type === 'CREATED') propStats[propName].newLeads++;
+        if (event.type === 'STAGE_CHANGE' && event.metadata?.to === 'Qualificado') propStats[propName].qualified++;
+      });
 
-    const ranking = Object.entries(propStats)
-      .filter(([_, stats]) => stats.newLeads >= 10 && stats.qualified >= 5)
-      .map(([name, stats]) => {
-        const qualRatio = stats.newLeads > 0 ? (stats.qualified / stats.newLeads) : 0;
-        return { name, ...stats, qualRatio };
-      })
-      .sort((a, b) => b.qualRatio - a.qualRatio)
-      .slice(0, 3);
+      const ranking = Object.entries(propStats)
+        .filter(([_, stats]) => stats.newLeads >= 10 && stats.qualified >= 5)
+        .map(([name, stats]) => {
+          const qualRatio = stats.newLeads > 0 ? (stats.qualified / stats.newLeads) : 0;
+          return { name, ...stats, qualRatio };
+        })
+        .sort((a, b) => b.qualRatio - a.qualRatio)
+        .slice(0, 3);
 
-    res.json(ranking);
-  } catch (error) {
-    console.error('Prop Ranking Error:', error);
-    res.status(500).json({ error: 'Erro ao calcular ranking imóveis' });
+      res.json(ranking);
+    } catch (error) {
+      console.error('Prop Ranking Error:', error);
+      res.status(500).json({ error: 'Erro ao calcular ranking imóveis' });
+    }
   }
-}
 }
 
 module.exports = new MetricsController();
