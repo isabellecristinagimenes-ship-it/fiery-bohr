@@ -164,32 +164,108 @@ class MetricsController {
     try {
       const agencyId = req.headers['x-agency-id'] || req.query.agencyId;
       const { startDate, endDate } = req.query;
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      // Adjust end date to include the full day
+      end.setHours(23, 59, 59, 999);
 
-      const events = await db.LeadEvent.findAll({
-        where: {
-          agencyId,
-          createdAt: { [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)] }
-        },
-        include: [{ model: db.Lead, as: 'lead' }]
+      // Fetch Events and Leads (to map ID to Property if needed, though events should ideally have it or we resolve it)
+      // Current events might not have 'imovel' directly if we only log lead_id. 
+      // We need to join with Leads.
+      const [events, leads] = await Promise.all([
+        sheetsService.getEvents(),
+        sheetsService.getLeads()
+      ]);
+
+      // Create a map of Lead ID -> Property Name
+      const leadPropertyMap = {};
+      const leadCreationTimeMap = {}; // To calc duration
+      leads.forEach(l => {
+        leadPropertyMap[l.id] = l.imovel;
       });
 
-      const propStats = {};
+      // Also build map from Create Events for duration calc
+      events.forEach(e => {
+        if (e.tipo_evento === 'CREATED') {
+          leadCreationTimeMap[e.lead_id] = new Date(e.timestamp);
+        }
+      });
+      // Fallback: If no created event (old lead), use current time or skip duration?
+      // User criterion: "Menor tempo médio até qualificação"
+
+      const stats = {};
 
       events.forEach(event => {
-        const propName = event.lead ? event.lead.imovel : 'Unknown';
-        if (!propStats[propName]) propStats[propName] = { newLeads: 0, qualified: 0 };
+        const eventDate = new Date(event.timestamp);
+        if (eventDate < start || eventDate > end) return;
 
-        if (event.type === 'CREATED') propStats[propName].newLeads++;
-        if (event.type === 'STAGE_CHANGE' && event.metadata?.to === 'Qualificado') propStats[propName].qualified++;
+        const propName = leadPropertyMap[event.lead_id] || 'Desconhecido';
+        if (!stats[propName]) {
+          stats[propName] = {
+            name: propName,
+            novos: 0,
+            qualificados: 0,
+            visitas: 0,
+            totalTime: 0, // ms
+            qualificacoesCountForTime: 0
+          };
+        }
+
+        if (event.tipo_evento === 'CREATED') {
+          stats[propName].novos++;
+        }
+
+        if (event.tipo_evento === 'STAGE_CHANGE' && (event.metadata?.includes('Qualificado') || event.metadata?.includes('Qualificação'))) {
+          // Check if truly moving TO qualificado
+          // Our logEvent saves JSON metadata: { from, to }
+          let isQualify = false;
+          try {
+            const meta = JSON.parse(event.metadata);
+            if (meta.to === 'Qualificação' || meta.to === 'Qualificado') isQualify = true;
+          } catch (e) {
+            // specific fallback or ignore
+            if (String(event.metadata).includes('Qualific')) isQualify = true;
+          }
+
+          if (isQualify) {
+            stats[propName].qualificados++;
+
+            // Calc Duration
+            const createdTime = leadCreationTimeMap[event.lead_id];
+            if (createdTime) {
+              const duration = eventDate - createdTime;
+              if (duration > 0) {
+                stats[propName].totalTime += duration;
+                stats[propName].qualificacoesCountForTime++;
+              }
+            }
+          }
+        }
+
+        if (event.tipo_evento === 'VISITA') {
+          stats[propName].visitas++;
+        }
       });
 
-      const ranking = Object.entries(propStats)
-        .filter(([_, stats]) => stats.newLeads >= 10 && stats.qualified >= 5)
-        .map(([name, stats]) => {
-          const qualRatio = stats.newLeads > 0 ? (stats.qualified / stats.newLeads) : 0;
-          return { name, ...stats, qualRatio };
+      const ranking = Object.values(stats)
+        .filter(s => s.novos >= 1 && s.qualificados >= 1) // Rule: At least 1 new AND 1 qualified
+        .map(s => {
+          const qualRatio = s.novos > 0 ? (s.qualificados / s.novos) : 0;
+          const avgTime = s.qualificacoesCountForTime > 0 ? (s.totalTime / s.qualificacoesCountForTime) : Infinity;
+          return { ...s, qualRatio, avgTime };
         })
-        .sort((a, b) => b.qualRatio - a.qualRatio)
+        .sort((a, b) => {
+          // 1. Rate (Desc)
+          if (b.qualRatio !== a.qualRatio) return b.qualRatio - a.qualRatio;
+          // 2. Count Qualified (Desc)
+          if (b.qualificados !== a.qualificados) return b.qualificados - a.qualificados;
+          // 3. Avg Time (Asc) - lower is better
+          if (a.avgTime !== b.avgTime) return a.avgTime - b.avgTime;
+          // 4. Visits (Desc)
+          if (b.visitas !== a.visitas) return b.visitas - a.visitas;
+          // 5. Name (Asc)
+          return a.name.localeCompare(b.name);
+        })
         .slice(0, 3);
 
       res.json(ranking);

@@ -130,6 +130,7 @@ class SheetsService {
 
     // Check if stage is changing to update timestamp
     if (data.etapa_atual && row.get('etapa_atual') !== data.etapa_atual) {
+      const oldStage = row.get('etapa_atual');
       const now = new Date();
       const mudancaData = new Intl.DateTimeFormat('pt-BR', {
         timeZone: 'America/Sao_Paulo',
@@ -143,6 +144,10 @@ class SheetsService {
         data_mudancadeetapa: mudancaData
       });
       console.log(`ℹ️ Stage changed. Updated timestamp: ${mudancaData}`);
+
+      // LOG EVENT: STAGE_CHANGE
+      // We use rowIndex as leadId
+      await this.logEvent(rowIndex, 'STAGE_CHANGE', JSON.stringify({ from: oldStage, to: data.etapa_atual }), spreadsheetId);
     } else if (data.etapa_atual) {
       // Just update without timestamp change if identical (rare but possible)
       row.assign({ etapa_atual: data.etapa_atual });
@@ -218,8 +223,18 @@ class SheetsService {
         resource: { values },
       });
 
-      console.log('✅ Lead added successfully via Google Sheets API.');
-      return { ...data, added: true, response: response.data };
+      // Parse Row ID from formatted response (e.g. "Página1!A10:J10")
+      const updatedRange = response.data.updates.updatedRange;
+      const match = updatedRange.match(/!A(\d+):/);
+      const newRowId = match ? match[1] : null;
+
+      console.log('✅ Lead added successfully via Google Sheets API. New ID:', newRowId);
+
+      if (newRowId) {
+        await this.logEvent(newRowId, 'CREATED', JSON.stringify({ corretor: data.corretor, origem: data.origem }), targetId);
+      }
+
+      return { ...data, added: true, id: newRowId, response: response.data };
     } catch (error) {
       console.error('❌ Error adding lead via Google Sheets API:', error.message);
       if (error.response) {
@@ -229,14 +244,56 @@ class SheetsService {
     }
   }
 
+  async logEvent(leadId, type, metadata = '', spreadsheetId) {
+    // Best effort logging - don't crash main flow if logging fails
+    try {
+      await this.init(spreadsheetId);
+      const targetId = spreadsheetId || process.env.GOOGLE_SHEETS_ID;
+
+      // Ensure 'events' sheet exists or use a fallback if possible
+      // Using google-spreadsheet for easier row adding
+      let doc = this.doc;
+      if (!doc && targetId) {
+        // Re-init doc if missing
+        const { google } = require('googleapis');
+        // Assumes this.sheetsClient is auth'd, but doc needs its own init or we utilize sheetsClient
+        // For simplicity, we skip complex re-init here as init() should have covered it.
+        // If this.doc is null, we can't use node-google-spreadsheet easily.
+        console.warn("⚠️ logEvent: this.doc is null. Skipping log.");
+        return;
+      }
+
+      let sheet = doc.sheetsByTitle['events'];
+      if (!sheet) {
+        // Try creating it if it doesn't exist? For now, just warn.
+        // User needs to create 'events' tab.
+        console.warn("⚠️ Aba 'events' não encontrada. Criando...");
+        sheet = await doc.addSheet({ title: 'events', headerValues: ['event_id', 'lead_id', 'tipo_evento', 'timestamp', 'metadata'] });
+      }
+
+      const timestamp = new Date().toISOString();
+      const event_id = `${leadId}_${Date.now()}`;
+
+      await sheet.addRow({
+        event_id,
+        lead_id: leadId,
+        tipo_evento: type,
+        timestamp,
+        metadata
+      });
+      console.log(`📝 Logged Event: ${type} for Lead ${leadId}`);
+
+    } catch (err) {
+      console.error("⚠️ Failed to log event:", err.message);
+    }
+  }
+
   async getEvents() {
     await this.init();
-    if (!this.doc) return []; // Graceful fail if no doc
+    if (!this.doc) return [];
 
-    // Try finding "events" sheet, but don't crash if missing (optional feature)
     const sheet = this.doc.sheetsByTitle['events'];
     if (!sheet) {
-      console.warn('⚠️ Aba "events" não encontrada. Retornando lista vazia.');
       return [];
     }
 
@@ -246,8 +303,7 @@ class SheetsService {
       lead_id: row.get('lead_id'),
       tipo_evento: row.get('tipo_evento'),
       timestamp: row.get('timestamp'),
-      observacao: row.get('observacao'),
-      motivo_perda: row.get('motivo_perda')
+      metadata: row.get('metadata')
     }));
   }
 }
