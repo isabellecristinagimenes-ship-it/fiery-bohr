@@ -125,6 +125,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, currentUser }) => {
                                 value={formData.nome_do_lead}
                                 onChange={handleChange}
                                 placeholder="Ex: João Silva"
+                                autoComplete="off" // Disable browser suggestion
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
@@ -145,6 +146,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, currentUser }) => {
                                 value={formData.telefone}
                                 onChange={handleChange}
                                 placeholder="Ex: 11999999999"
+                                autoComplete="off" // Disable browser suggestion
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
