@@ -102,7 +102,7 @@ function Dashboard() {
     </div>
   );
 
-  const stages = ['Novo Lead', 'Qualificação', 'Visita', 'Proposta'];
+  const stages = ['Novo Lead', 'Qualificação', 'Visita', 'Proposta', 'Negócio Fechado', 'Perdido'];
 
   return (
     <div className="dashboard-container">

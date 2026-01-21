@@ -249,6 +249,8 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, currentUser, lead }) => {
                             <option value="Qualificação">Qualificação</option>
                             <option value="Visita">Visita</option>
                             <option value="Proposta">Proposta</option>
+                            <option value="Negócio Fechado">Negócio Fechado</option>
+                            <option value="Perdido">Perdido</option>
                         </select>
                     </div>
 
