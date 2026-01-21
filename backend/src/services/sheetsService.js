@@ -4,10 +4,16 @@ const { JWT } = require('google-auth-library');
 class SheetsService {
   constructor() {
     this.doc = null;
+    this.sheetsClient = null;
   }
 
-  async init() {
-    if (this.doc) return;
+  async init(spreadsheetId = process.env.GOOGLE_SHEETS_ID) {
+    // If we have both doc and client initialized for the SAME spreadsheetId (conceptually), return.
+    // However, since we might switch sheets dynamically, let's keep it simple for now:
+    // If we have this.doc and it matches the requested ID (if provided), we might skip.
+    // For this fix, let's just ensure we have A doc if we need one.
+
+    if (this.doc && this.sheetsClient) return;
 
     // --- FINAL FIX (v40.0 GOOGLE AUTH WRAPPER) ---
     // Switch to GoogleAuth (higher level) and add deep diagnostics.
@@ -22,11 +28,8 @@ class SheetsService {
         credsReq.private_key = credsReq.private_key.replace(/\\n/g, '\n');
       }
 
-      console.log('--- Auth Diagnostics (v40.0 GOOGLE AUTH) ---');
+      console.log('--- Auth Diagnostics (v41.0 FIX) ---');
       console.log('Email:', credsReq.client_email);
-      console.log('Key Length:', credsReq.private_key ? credsReq.private_key.length : 0);
-      console.log('Key Start:', credsReq.private_key ? credsReq.private_key.substring(0, 30) : 'MISSING');
-      console.log('Key End:', credsReq.private_key ? credsReq.private_key.substring(credsReq.private_key.length - 20) : 'MISSING');
 
       const { google } = require('googleapis');
 
@@ -36,14 +39,29 @@ class SheetsService {
           client_email: credsReq.client_email,
           private_key: credsReq.private_key,
         },
-        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        scopes: [
+          'https://www.googleapis.com/auth/spreadsheets',
+          'https://www.googleapis.com/auth/drive.file'
+        ],
       });
 
       const authClient = await auth.getClient();
 
-      // GoogleAuth returns an authenticated client directly
+      // 1. Initialize API Client (for append/write)
       this.sheetsClient = google.sheets({ version: 'v4', auth: authClient });
-      console.log('✅ Google Sheets Auth successful (GOOGLE AUTH).');
+
+      // 2. Initialize Doc (for read/getRows)
+      if (spreadsheetId) {
+        console.log(`ℹ️ Initializing Doc with ID: ${spreadsheetId}`);
+        const doc = new GoogleSpreadsheet(spreadsheetId, authClient);
+        await doc.loadInfo();
+        this.doc = doc;
+        console.log(`✅ Google Sheet Doc loaded: "${doc.title}" with keys:`, Object.keys(doc.sheetsByTitle));
+      } else {
+        console.warn('⚠️ No Spreadsheet ID provided to init(). Read operations (getLeads) will fail if this.doc is unused.');
+      }
+
+      console.log('✅ Google Sheets Service initialized.');
 
     } catch (err) {
       console.error('❌ CRITICAL AUTH ERROR:', err.message);
@@ -53,6 +71,8 @@ class SheetsService {
   }
 
   _getSheet(title) {
+    if (!this.doc) throw new Error('Google Spreadsheet Doc not initialized. Missing SPREADSHEET_ID?');
+
     let sheet = this.doc.sheetsByTitle[title];
     if (!sheet) {
       console.warn(`Aba "${title}" não encontrada. Tentando "Página1" ou primeira aba.`);
@@ -63,7 +83,15 @@ class SheetsService {
   }
 
   async getLeads() {
+    // Falls back to Env ID if not initialized
     await this.init();
+
+    // Safety check
+    if (!this.doc) {
+      console.error("❌ getLeads failed: this.doc is null. Is SPREADSHEET_ID set?");
+      return [];
+    }
+
     const sheet = this._getSheet('leads');
 
     // Ler linhas
@@ -83,15 +111,18 @@ class SheetsService {
   }
 
   async addLead(data, spreadsheetId) {
-    if (!spreadsheetId) {
-      throw new Error('CONFIG_ERROR: Agência sem Planilha Google conectada.');
+    // If specific ID passed (SaaS mode), use it. otherwise uses default env ID
+    await this.init(spreadsheetId);
+
+    const targetId = spreadsheetId || process.env.GOOGLE_SHEETS_ID;
+    if (!targetId) {
+      throw new Error('CONFIG_ERROR: Agência sem Planilha Google conectada e sem ID padrão.');
     }
-    await this.init(); // Ensure sheetsClient is initialized
 
     try {
       // 1. Fetch Spreadsheet Metadata to get the real Sheet Name (avoid "Página1" hardcoding errors)
       const meta = await this.sheetsClient.spreadsheets.get({
-        spreadsheetId
+        spreadsheetId: targetId
       });
 
       const firstSheetTitle = meta.data.sheets[0].properties.title;
@@ -108,9 +139,12 @@ class SheetsService {
         ]
       ];
 
+      // Fix range quoting for special characters like 'Página1'
+      const safeRange = `'${firstSheetTitle}'!A:F`;
+
       const response = await this.sheetsClient.spreadsheets.values.append({
-        spreadsheetId,
-        range: `${firstSheetTitle}!A:F`, // Dynamic Range
+        spreadsheetId: targetId,
+        range: safeRange, // Fixed
         valueInputOption: 'USER_ENTERED',
         resource: { values },
       });
@@ -128,8 +162,14 @@ class SheetsService {
 
   async getEvents() {
     await this.init();
+    if (!this.doc) return []; // Graceful fail if no doc
+
+    // Try finding "events" sheet, but don't crash if missing (optional feature)
     const sheet = this.doc.sheetsByTitle['events'];
-    if (!sheet) throw new Error('Aba "events" não encontrada na planilha.');
+    if (!sheet) {
+      console.warn('⚠️ Aba "events" não encontrada. Retornando lista vazia.');
+      return [];
+    }
 
     const rows = await sheet.getRows();
     return rows.map(row => ({

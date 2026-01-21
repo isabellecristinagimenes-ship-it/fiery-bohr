@@ -38,10 +38,12 @@ class MetricsController {
       }
 
       // Fetch from DB instead of Sheets for SaaS
+      console.log('DEBUG: Fetching ALL leads (Filter Disabled temporarily)');
       const leads = await db.Lead.findAll({
-        where: whereClause,
+        // where: whereClause, // DISABLE FILTER TO DEBUG "INVISIBLE LEADS"
         order: [['createdAt', 'DESC']]
       });
+      console.log(`DEBUG: Found ${leads.length} leads in DB.`);
 
       res.json(leads);
     } catch (error) {
