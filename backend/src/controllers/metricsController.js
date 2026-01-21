@@ -21,29 +21,13 @@ class MetricsController {
 
   async getLeads(req, res) {
     try {
-      // SAAS ISOLATION: 
-      // We expect 'x-agency-id' header or query param for now, 
-      // since we don't have a full JWT middleware yet.
-      const agencyId = req.headers['x-agency-id'] || req.query.agencyId;
+      // Fetch from Google Sheets for MVP/Pipeline fix
+      console.log('DEBUG: Fetching leads from Google Sheets (MVP Mode)');
 
-      let whereClause = {};
-      if (agencyId) {
-        // PERMITIR LEADS LEGADOS (agencyId IS NULL) - FIX TEMPORÁRIO
-        whereClause = {
-          [db.Sequelize.Op.or]: [
-            { agencyId: agencyId },
-            { agencyId: null }
-          ]
-        };
-      }
+      // Ensure sheetsService is initialized with default ID if needed
+      const leads = await sheetsService.getLeads();
 
-      // Fetch from DB instead of Sheets for SaaS
-      console.log('DEBUG: Fetching ALL leads (Filter Disabled temporarily)');
-      const leads = await db.Lead.findAll({
-        // where: whereClause, // DISABLE FILTER TO DEBUG "INVISIBLE LEADS"
-        order: [['createdAt', 'DESC']]
-      });
-      console.log(`DEBUG: Found ${leads.length} leads in DB.`);
+      console.log(`DEBUG: Found ${leads.length} leads in Sheets.`);
 
       res.json(leads);
     } catch (error) {
