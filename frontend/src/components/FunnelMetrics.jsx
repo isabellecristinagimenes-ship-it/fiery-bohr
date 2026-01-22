@@ -1,11 +1,13 @@
-import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronRight, Calendar } from 'lucide-react';
 
 /**
  * FunnelMetrics Component
  * Shows all 6 pipeline stages horizontally with conversion rates between them
  */
-const FunnelMetrics = ({ stageCounts, period, onPeriodChange }) => {
+const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, onCustomDateChange }) => {
+    const [showCustom, setShowCustom] = useState(period === 'custom');
+
     const stages = [
         { key: 'novoLead', label: 'NOVO LEAD', color: '#6366f1' },
         { key: 'qualificacao', label: 'QUALIFICAÇÃO', color: '#8b5cf6' },
@@ -16,6 +18,16 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange }) => {
 
     // Get total (first stage count) for percentage calculations
     const total = stageCounts.novoLead || 1;
+
+    const inputStyle = {
+        background: 'var(--bg-card)',
+        color: 'var(--text-main)',
+        padding: '0.5rem',
+        borderRadius: '0.5rem',
+        border: '1px solid var(--border)',
+        cursor: 'pointer',
+        fontSize: '0.85rem'
+    };
 
     return (
         <div style={{
@@ -30,31 +42,57 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange }) => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                marginBottom: '1.5rem'
+                marginBottom: '1.5rem',
+                flexWrap: 'wrap',
+                gap: '1rem'
             }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>
                     Funil de Conversão
                 </h3>
-                <select
-                    value={period}
-                    onChange={(e) => {
-                        const val = e.target.value;
-                        onPeriodChange(val === 'current_year' ? 'current_year' : Number(val));
-                    }}
-                    style={{
-                        background: 'var(--bg-card)',
-                        color: 'var(--text-main)',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '0.5rem',
-                        border: '1px solid var(--border)',
-                        cursor: 'pointer'
-                    }}
-                >
-                    <option value={7}>Últimos 7 dias</option>
-                    <option value={30}>Últimos 30 dias</option>
-                    <option value={90}>Últimos 3 meses</option>
-                    <option value="current_year">Este Ano</option>
-                </select>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    {/* Preset Dropdown */}
+                    <select
+                        value={showCustom ? 'custom' : period}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === 'custom') {
+                                setShowCustom(true);
+                                onPeriodChange('custom');
+                            } else {
+                                setShowCustom(false);
+                                onPeriodChange(val === 'current_year' ? 'current_year' : Number(val));
+                            }
+                        }}
+                        style={inputStyle}
+                    >
+                        <option value={7}>Últimos 7 dias</option>
+                        <option value={30}>Últimos 30 dias</option>
+                        <option value={90}>Últimos 3 meses</option>
+                        <option value="current_year">Este Ano</option>
+                        <option value="custom">📅 Personalizado</option>
+                    </select>
+
+                    {/* Custom Date Range Picker */}
+                    {showCustom && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Calendar size={16} color="var(--text-muted)" />
+                            <input
+                                type="date"
+                                value={customDateRange?.start || ''}
+                                onChange={(e) => onCustomDateChange?.({ ...customDateRange, start: e.target.value })}
+                                style={inputStyle}
+                            />
+                            <span style={{ color: 'var(--text-muted)' }}>até</span>
+                            <input
+                                type="date"
+                                value={customDateRange?.end || ''}
+                                onChange={(e) => onCustomDateChange?.({ ...customDateRange, end: e.target.value })}
+                                style={inputStyle}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Funnel - Horizontal Layout */}

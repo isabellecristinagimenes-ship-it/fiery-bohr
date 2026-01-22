@@ -34,6 +34,7 @@ export default function AdminDashboard() {
 
     // Analytics State
     const [period, setPeriod] = useState(30);
+    const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
     const [brokerRank, setBrokerRank] = useState([]);
     const [propRank, setPropRank] = useState([]);
     const [loadingRank, setLoadingRank] = useState(false);
@@ -53,9 +54,15 @@ export default function AdminDashboard() {
     const getDateRange = () => {
         const end = new Date();
         let start = new Date();
-        if (period === 'current_year') {
+
+        if (period === 'custom' && customDateRange.start && customDateRange.end) {
+            return {
+                start: new Date(customDateRange.start),
+                end: new Date(customDateRange.end)
+            };
+        } else if (period === 'current_year') {
             start = new Date(new Date().getFullYear(), 0, 1);
-        } else {
+        } else if (typeof period === 'number') {
             start.setDate(end.getDate() - period);
         }
         return { start, end };
@@ -311,6 +318,8 @@ export default function AdminDashboard() {
                         })()}
                         period={period}
                         onPeriodChange={setPeriod}
+                        customDateRange={customDateRange}
+                        onCustomDateChange={setCustomDateRange}
                     />
 
                     <div style={{ marginBottom: '3rem' }}>
