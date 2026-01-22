@@ -39,8 +39,41 @@ export default function BrokerDashboard() {
     // Helper for safe comparison
     const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
 
-    // Filter leads for Broker
-    const filteredLeads = leads.filter(lead => normalize(lead.corretor) === normalize(user.name));
+    // Parse DD/MM/YYYY date format from sheet
+    const parseSheetDate = (dateStr) => {
+        if (!dateStr || typeof dateStr !== 'string') return null;
+        const [day, month, year] = dateStr.split('/');
+        if (!day || !month || !year) return null;
+        return new Date(`${year}-${month}-${day}`);
+    };
+
+    // Calculate date range based on period
+    const getDateRange = () => {
+        const end = new Date();
+        let start = new Date();
+        if (period === 'current_year') {
+            start = new Date(new Date().getFullYear(), 0, 1);
+        } else {
+            start.setDate(end.getDate() - period);
+        }
+        return { start, end };
+    };
+
+    // Filter leads for Broker AND by date period
+    const filteredLeads = leads.filter(lead => {
+        // Filter by broker name
+        if (normalize(lead.corretor) !== normalize(user.name)) return false;
+
+        // Filter by date: show lead if entry OR stage change is in period
+        const { start, end } = getDateRange();
+        const entryDate = parseSheetDate(lead.data_entrada);
+        const stageDate = parseSheetDate(lead.data_mudancadeetapa);
+
+        const entryInPeriod = entryDate && entryDate >= start && entryDate <= end;
+        const stageInPeriod = stageDate && stageDate >= start && stageDate <= end;
+
+        return entryInPeriod || stageInPeriod;
+    });
 
     const fetchData = async () => {
         setLoading(true);
