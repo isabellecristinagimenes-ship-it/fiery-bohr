@@ -288,41 +288,25 @@ export default function AdminDashboard() {
                 </div>
             ) : (
                 <>
-                    <FunnelMetrics stageCounts={{
-                        novoLead: filteredLeads.filter(l => normalize(l.etapa_atual) === 'novo lead').length,
-                        qualificacao: filteredLeads.filter(l => normalize(l.etapa_atual) === 'qualificação').length,
-                        visita: filteredLeads.filter(l => normalize(l.etapa_atual) === 'visita').length,
-                        proposta: filteredLeads.filter(l => normalize(l.etapa_atual) === 'proposta').length,
-                        fechado: filteredLeads.filter(l => normalize(l.etapa_atual) === 'negócio fechado').length,
-                        perdido: filteredLeads.filter(l => normalize(l.etapa_atual) === 'perdido').length,
-                    }} />
+                    <FunnelMetrics
+                        stageCounts={{
+                            novoLead: filteredLeads.filter(l => normalize(l.etapa_atual) === 'novo lead').length,
+                            qualificacao: filteredLeads.filter(l => normalize(l.etapa_atual) === 'qualificação').length,
+                            visita: filteredLeads.filter(l => normalize(l.etapa_atual) === 'visita').length,
+                            proposta: filteredLeads.filter(l => normalize(l.etapa_atual) === 'proposta').length,
+                            fechado: filteredLeads.filter(l => normalize(l.etapa_atual) === 'negócio fechado').length,
+                            perdido: filteredLeads.filter(l => normalize(l.etapa_atual) === 'perdido').length,
+                        }}
+                        period={period}
+                        onPeriodChange={setPeriod}
+                    />
 
                     <div style={{ marginBottom: '3rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                 <TrendingUp size={24} color="var(--accent-gold)" />
                                 Performance da Agência
                             </h2>
-                            <select
-                                value={period}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setPeriod(val === 'current_year' ? 'current_year' : Number(val));
-                                }}
-                                style={{
-                                    background: 'var(--bg-card)',
-                                    color: 'var(--text-main)',
-                                    padding: '0.5rem 1rem',
-                                    borderRadius: '0.5rem',
-                                    border: '1px solid var(--border)',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                <option value={7}>Últimos 7 dias</option>
-                                <option value={30}>Últimos 30 dias</option>
-                                <option value={90}>Últimos 3 meses</option>
-                                <option value="current_year">Este Ano</option>
-                            </select>
                         </div>
 
                         <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
