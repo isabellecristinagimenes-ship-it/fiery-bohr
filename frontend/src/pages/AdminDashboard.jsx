@@ -139,8 +139,8 @@ export default function AdminDashboard() {
                 etapa_atual: newStage,
                 agencyId: user?.agencyId
             });
-            // Refresh rankings after stage change
-            fetchRankings();
+            // Refresh rankings after stage change (small delay to ensure backend saves)
+            setTimeout(() => fetchRankings(), 500);
         } catch (err) {
             console.error("Failed to move lead", err);
             fetchData();
