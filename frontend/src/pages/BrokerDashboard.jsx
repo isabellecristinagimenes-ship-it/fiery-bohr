@@ -182,8 +182,11 @@ export default function BrokerDashboard() {
                 etapa_atual: newStage,
                 agencyId: user?.agencyId
             });
-            // Refresh rankings after stage change (small delay to ensure backend saves)
-            setTimeout(() => fetchRankings(), 500);
+            // Refresh data after stage change (small delay to ensure backend saves)
+            setTimeout(() => {
+                fetchRankings();
+                fetchData(); // Refresh leads to get updated data_mudancadeetapa
+            }, 500);
         } catch (err) {
             console.error("Failed to move lead", err);
             fetchData();
