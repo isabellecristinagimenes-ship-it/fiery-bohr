@@ -1,16 +1,17 @@
 import React from 'react';
+import { ChevronRight } from 'lucide-react';
 
 /**
- * FunnelMetrics Component - Visual Funnel Shape
- * Shows pipeline stages as a vertical funnel with decreasing widths
+ * FunnelMetrics Component
+ * Shows all 6 pipeline stages horizontally with conversion rates between them
  */
 const FunnelMetrics = ({ stageCounts, period, onPeriodChange }) => {
     const stages = [
-        { key: 'novoLead', label: 'Novos Leads', color: '#6366f1' },
-        { key: 'qualificacao', label: 'Qualificação', color: '#8b5cf6' },
-        { key: 'visita', label: 'Visita', color: '#06b6d4' },
-        { key: 'proposta', label: 'Proposta', color: '#22c55e' },
-        { key: 'fechado', label: 'Fechado', color: '#fbbf24' },
+        { key: 'novoLead', label: 'NOVO LEAD', color: '#6366f1' },
+        { key: 'qualificacao', label: 'QUALIFICAÇÃO', color: '#8b5cf6' },
+        { key: 'visita', label: 'VISITA', color: '#06b6d4' },
+        { key: 'proposta', label: 'PROPOSTA', color: '#22c55e' },
+        { key: 'fechado', label: 'FECHADO', color: '#fbbf24' },
     ];
 
     // Get total (first stage count) for percentage calculations
@@ -56,115 +57,141 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange }) => {
                 </select>
             </div>
 
-            {/* Funnel Visualization */}
+            {/* Funnel - Horizontal Layout */}
             <div style={{
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.25rem'
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '0.5rem'
             }}>
                 {stages.map((stage, index) => {
                     const count = stageCounts[stage.key] || 0;
-                    const percentage = Math.round((count / total) * 100);
-
-                    // Width decreases as we go down the funnel (100% → 20%)
-                    const maxWidth = 100 - (index * 15);
-                    const minWidth = 30;
-                    const width = Math.max(minWidth, maxWidth);
+                    const prevCount = index > 0 ? (stageCounts[stages[index - 1].key] || 0) : count;
 
                     // Rate vs previous stage
-                    const prevCount = index > 0 ? (stageCounts[stages[index - 1].key] || 0) : count;
                     const rateVsPrev = index === 0 ? 100 : (prevCount > 0 ? Math.round((count / prevCount) * 100) : 0);
 
+                    // Rate vs total
+                    const rateVsTotal = Math.round((count / total) * 100);
+
+                    const showArrow = index > 0;
+
                     return (
-                        <div
-                            key={stage.key}
-                            style={{
-                                width: `${width}%`,
-                                background: `linear-gradient(135deg, ${stage.color}40, ${stage.color}20)`,
-                                border: `1px solid ${stage.color}50`,
-                                borderRadius: index === 0 ? '0.75rem 0.75rem 0 0' :
-                                    index === stages.length - 1 ? '0 0 0.75rem 0.75rem' : '0',
-                                padding: '0.75rem 1rem',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                position: 'relative'
-                            }}
-                        >
-                            {/* Left: Label */}
-                            <span style={{
-                                fontSize: '0.85rem',
-                                color: 'var(--text-main)',
-                                fontWeight: 500
-                            }}>
-                                {stage.label}
-                            </span>
-
-                            {/* Center: Count */}
-                            <span style={{
-                                fontSize: '1.25rem',
-                                fontWeight: 700,
-                                color: stage.color
-                            }}>
-                                {count}
-                            </span>
-
-                            {/* Right: Percentages */}
-                            <div style={{
-                                textAlign: 'right',
-                                minWidth: '80px'
-                            }}>
-                                {index > 0 && (
-                                    <>
-                                        <div style={{
-                                            fontSize: '0.75rem',
-                                            fontWeight: 600,
-                                            color: rateVsPrev >= 50 ? '#22c55e' : rateVsPrev >= 25 ? '#fbbf24' : '#ef4444'
-                                        }}>
-                                            {rateVsPrev}% anterior
-                                        </div>
-                                        <div style={{
-                                            fontSize: '0.65rem',
-                                            color: 'var(--text-muted)'
-                                        }}>
-                                            {percentage}% total
-                                        </div>
-                                    </>
-                                )}
-                                {index === 0 && (
+                        <React.Fragment key={stage.key}>
+                            {/* Arrow with conversion rates */}
+                            {showArrow && (
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    minWidth: '50px'
+                                }}>
                                     <div style={{
-                                        fontSize: '0.75rem',
+                                        fontSize: '0.7rem',
+                                        color: rateVsPrev >= 50 ? '#22c55e' : rateVsPrev >= 25 ? '#fbbf24' : '#ef4444',
+                                        fontWeight: 600
+                                    }}>
+                                        {rateVsPrev}%
+                                    </div>
+                                    <ChevronRight size={20} color="var(--text-muted)" />
+                                    <div style={{
+                                        fontSize: '0.6rem',
                                         color: 'var(--text-muted)'
                                     }}>
-                                        100%
+                                        {rateVsTotal}% total
                                     </div>
-                                )}
+                                </div>
+                            )}
+
+                            {/* Stage Box */}
+                            <div style={{
+                                background: 'rgba(255,255,255,0.03)',
+                                border: `1px solid ${stage.color}30`,
+                                borderRadius: '0.75rem',
+                                padding: '1rem',
+                                minWidth: '90px',
+                                textAlign: 'center',
+                                flex: '1 1 90px'
+                            }}>
+                                <div style={{
+                                    fontSize: '0.65rem',
+                                    color: 'var(--text-muted)',
+                                    marginBottom: '0.5rem',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>
+                                    {stage.label}
+                                </div>
+                                <div style={{
+                                    fontSize: '1.75rem',
+                                    fontWeight: 700,
+                                    color: stage.color
+                                }}>
+                                    {count}
+                                </div>
                             </div>
-                        </div>
+                        </React.Fragment>
                     );
                 })}
 
-                {/* Perdidos - Separate */}
+                {/* Perdidos - Last Arrow + Box */}
                 {stageCounts.perdido > 0 && (
-                    <div style={{
-                        marginTop: '1rem',
-                        padding: '0.5rem 1rem',
-                        background: 'rgba(239, 68, 68, 0.1)',
-                        border: '1px solid rgba(239, 68, 68, 0.3)',
-                        borderRadius: '0.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                    }}>
-                        <span style={{ color: '#ef4444', fontWeight: 600 }}>
-                            {stageCounts.perdido}
-                        </span>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                            Perdidos ({Math.round((stageCounts.perdido / total) * 100)}%)
-                        </span>
-                    </div>
+                    <>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            minWidth: '50px'
+                        }}>
+                            <div style={{
+                                fontSize: '0.7rem',
+                                color: '#ef4444',
+                                fontWeight: 600
+                            }}>
+                                ✕
+                            </div>
+                            <ChevronRight size={20} color="#ef4444" />
+                        </div>
+                        <div style={{
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: '0.75rem',
+                            padding: '1rem',
+                            minWidth: '90px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{
+                                fontSize: '0.65rem',
+                                color: '#ef4444',
+                                marginBottom: '0.5rem',
+                                textTransform: 'uppercase'
+                            }}>
+                                PERDIDOS
+                            </div>
+                            <div style={{
+                                fontSize: '1.75rem',
+                                fontWeight: 700,
+                                color: '#ef4444'
+                            }}>
+                                {stageCounts.perdido}
+                            </div>
+                        </div>
+                    </>
                 )}
+            </div>
+
+            {/* Legend */}
+            <div style={{
+                marginTop: '1rem',
+                fontSize: '0.7rem',
+                color: 'var(--text-muted)',
+                textAlign: 'center'
+            }}>
+                <span style={{ marginRight: '1rem' }}>↑ Taxa vs etapa anterior</span>
+                <span>↓ Taxa vs total de leads</span>
             </div>
         </div>
     );
