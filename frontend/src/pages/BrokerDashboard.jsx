@@ -16,6 +16,7 @@ import {
 import AddLeadModal from '../components/AddLeadModal';
 import EditLeadModal from '../components/EditLeadModal';
 import PropertyRankingWidget from '../components/PropertyRankingWidget';
+import FunnelMetrics from '../components/FunnelMetrics';
 // BrokerRankingWidget NOT imported/used for Brokers to avoid confusion
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
@@ -284,20 +285,14 @@ export default function BrokerDashboard() {
                 </div>
             ) : (
                 <>
-                    <div className="metrics-grid">
-                        {/* Broker only sees relevant metrics or generic ones? Current backend returns TOTAL agency metrics. 
-                For true separation, backend should filter metrics too. 
-                For now, preserving existing 'MetricsCard' generic display but aware it might show Agency totals. */}
-                        <MetricCard label="Total de Leads" value={filteredLeads.length || 0} icon={Users} color="var(--accent-blue)" />
-                        {/* 
-                NOTE: metrics object from backend (getOverview) currently returns TOTALS. 
-                Ideally we calculate from filteredLeads for accuracy on frontend or update backend.
-                Let's calculate simple counts from filteredLeads to be accurate to "Corretor"
-            */}
-                        <MetricCard label="Visitas" value={filteredLeads.filter(l => normalize(l.etapa_atual) === 'visita').length} icon={Eye} color="var(--accent-purple)" />
-                        <MetricCard label="Propostas" value={filteredLeads.filter(l => normalize(l.etapa_atual) === 'proposta').length} icon={FileText} color="var(--accent-green)" />
-                        <MetricCard label="Perdas" value={filteredLeads.filter(l => normalize(l.etapa_atual) === 'perdido').length} icon={XOctagon} color="#ef4444" />
-                    </div>
+                    <FunnelMetrics stageCounts={{
+                        novoLead: filteredLeads.filter(l => normalize(l.etapa_atual) === 'novo lead').length,
+                        qualificacao: filteredLeads.filter(l => normalize(l.etapa_atual) === 'qualificação').length,
+                        visita: filteredLeads.filter(l => normalize(l.etapa_atual) === 'visita').length,
+                        proposta: filteredLeads.filter(l => normalize(l.etapa_atual) === 'proposta').length,
+                        fechado: filteredLeads.filter(l => normalize(l.etapa_atual) === 'negócio fechado').length,
+                        perdido: filteredLeads.filter(l => normalize(l.etapa_atual) === 'perdido').length,
+                    }} />
 
                     <div style={{ marginBottom: '3rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>

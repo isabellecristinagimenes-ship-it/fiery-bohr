@@ -17,6 +17,7 @@ import AddLeadModal from '../components/AddLeadModal';
 import EditLeadModal from '../components/EditLeadModal';
 import BrokerRankingWidget from '../components/BrokerRankingWidget';
 import PropertyRankingWidget from '../components/PropertyRankingWidget';
+import FunnelMetrics from '../components/FunnelMetrics';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 
@@ -287,12 +288,14 @@ export default function AdminDashboard() {
                 </div>
             ) : (
                 <>
-                    <div className="metrics-grid">
-                        <MetricCard label="Total de Leads" value={metrics?.total_leads || 0} icon={Users} color="var(--accent-blue)" />
-                        <MetricCard label="Visitas Realizadas" value={metrics?.total_visitas || 0} icon={Eye} color="var(--accent-purple)" />
-                        <MetricCard label="Propostas" value={metrics?.total_propostas || 0} icon={FileText} color="var(--accent-green)" />
-                        <MetricCard label="Perdas" value={metrics?.total_perdas || 0} icon={XOctagon} color="#ef4444" />
-                    </div>
+                    <FunnelMetrics stageCounts={{
+                        novoLead: filteredLeads.filter(l => normalize(l.etapa_atual) === 'novo lead').length,
+                        qualificacao: filteredLeads.filter(l => normalize(l.etapa_atual) === 'qualificação').length,
+                        visita: filteredLeads.filter(l => normalize(l.etapa_atual) === 'visita').length,
+                        proposta: filteredLeads.filter(l => normalize(l.etapa_atual) === 'proposta').length,
+                        fechado: filteredLeads.filter(l => normalize(l.etapa_atual) === 'negócio fechado').length,
+                        perdido: filteredLeads.filter(l => normalize(l.etapa_atual) === 'perdido').length,
+                    }} />
 
                     <div style={{ marginBottom: '3rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
