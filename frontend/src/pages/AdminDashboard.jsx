@@ -219,7 +219,7 @@ export default function AdminDashboard() {
         return diffDays;
     };
 
-    const stages = ['Novo Lead', 'Qualificação', 'Visita', 'Proposta', 'Negócio Fechado', 'Perdido'];
+    const stages = ['Novo Lead', 'Qualificação', 'Visita', 'Proposta', 'Negócio Fechado', 'Hibernação', 'Perdido'];
 
     return (
         <div className="dashboard-container">
@@ -322,21 +322,24 @@ export default function AdminDashboard() {
                     <FunnelMetrics
                         stageCounts={(() => {
                             // Cumulative counts: each stage includes leads at that stage OR beyond
+                            // Hibernação and Perdido are tracked separately (not part of main funnel)
                             const stageOrder = ['novo lead', 'qualificação', 'visita', 'proposta', 'negócio fechado'];
                             const getStageIndex = (stage) => stageOrder.indexOf(normalize(stage));
 
                             const countAtOrBeyond = (minStageIndex) =>
                                 filteredLeads.filter(l => {
                                     const idx = getStageIndex(l.etapa_atual);
-                                    return idx >= minStageIndex && normalize(l.etapa_atual) !== 'perdido';
+                                    const isExcluded = normalize(l.etapa_atual) === 'perdido' || normalize(l.etapa_atual) === 'hibernação';
+                                    return idx >= minStageIndex && !isExcluded;
                                 }).length;
 
                             return {
-                                novoLead: countAtOrBeyond(0),        // All leads (except perdido)
-                                qualificacao: countAtOrBeyond(1),    // Qualificação or beyond
-                                visita: countAtOrBeyond(2),          // Visita or beyond
-                                proposta: countAtOrBeyond(3),        // Proposta or beyond
-                                fechado: countAtOrBeyond(4),         // Only Fechado
+                                novoLead: countAtOrBeyond(0),
+                                qualificacao: countAtOrBeyond(1),
+                                visita: countAtOrBeyond(2),
+                                proposta: countAtOrBeyond(3),
+                                fechado: countAtOrBeyond(4),
+                                hibernacao: filteredLeads.filter(l => normalize(l.etapa_atual) === 'hibernação').length,
                                 perdido: filteredLeads.filter(l => normalize(l.etapa_atual) === 'perdido').length,
                             };
                         })()}

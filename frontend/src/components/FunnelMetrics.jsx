@@ -174,7 +174,53 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
                     );
                 })}
 
-                {/* Perdidos - Last Arrow + Box */}
+                {/* Hibernação - Separate (cinza/azul - pode voltar) */}
+                {stageCounts.hibernacao > 0 && (
+                    <>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            minWidth: '50px'
+                        }}>
+                            <div style={{
+                                fontSize: '0.7rem',
+                                color: '#94a3b8',
+                                fontWeight: 600
+                            }}>
+                                💤
+                            </div>
+                            <ChevronRight size={20} color="#94a3b8" />
+                        </div>
+                        <div style={{
+                            background: 'rgba(148, 163, 184, 0.1)',
+                            border: '1px solid rgba(148, 163, 184, 0.3)',
+                            borderRadius: '0.75rem',
+                            padding: '1rem',
+                            minWidth: '90px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{
+                                fontSize: '0.65rem',
+                                color: '#94a3b8',
+                                marginBottom: '0.5rem',
+                                textTransform: 'uppercase'
+                            }}>
+                                HIBERNAÇÃO
+                            </div>
+                            <div style={{
+                                fontSize: '1.75rem',
+                                fontWeight: 700,
+                                color: '#94a3b8'
+                            }}>
+                                {stageCounts.hibernacao}
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {/* Perdidos - Vermelho (definitivo) */}
                 {stageCounts.perdido > 0 && (
                     <>
                         <div style={{
@@ -218,7 +264,7 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
                             </div>
                         </div>
                     </>
-                )}
+                )}}
             </div>
 
             {/* Legend */}
