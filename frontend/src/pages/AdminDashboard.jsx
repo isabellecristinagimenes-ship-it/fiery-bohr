@@ -463,9 +463,14 @@ export default function AdminDashboard() {
                                                                             {getDaysInStage(lead) ?? '-'}d
                                                                         </div>
                                                                     </div>
-                                                                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                                                                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
                                                                         Imóvel: {lead.imovel}
                                                                     </div>
+                                                                    {lead.origem && (
+                                                                        <div style={{ fontSize: '0.7rem', color: 'var(--accent-purple)', marginBottom: '0.25rem' }}>
+                                                                            📍 {lead.origem}
+                                                                        </div>
+                                                                    )}
 
                                                                     <div style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', marginBottom: '1rem' }}>
                                                                         👤 {lead.corretor || 'Sem corretor'}

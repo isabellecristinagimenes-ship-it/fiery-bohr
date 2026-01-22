@@ -459,9 +459,14 @@ export default function BrokerDashboard() {
                                                                             {getDaysInStage(lead) ?? '-'}d
                                                                         </div>
                                                                     </div>
-                                                                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                                                                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
                                                                         Imóvel: {lead.imovel}
                                                                     </div>
+                                                                    {lead.origem && (
+                                                                        <div style={{ fontSize: '0.7rem', color: 'var(--accent-purple)', marginBottom: '0.5rem' }}>
+                                                                            📍 {lead.origem}
+                                                                        </div>
+                                                                    )}
 
                                                                     <button
                                                                         onClick={(e) => openWhatsApp(e, lead.telefone)}
@@ -489,7 +494,8 @@ export default function BrokerDashboard() {
                                                     ))}
                                                     {provided.placeholder}
                                                 </div>
-                                            )}
+                                            )
+                                            }
                                         </Droppable>
                                     );
                                 })}
