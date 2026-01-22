@@ -264,7 +264,7 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
                             </div>
                         </div>
                     </>
-                )}}
+                )}
             </div>
 
             {/* Legend */}
