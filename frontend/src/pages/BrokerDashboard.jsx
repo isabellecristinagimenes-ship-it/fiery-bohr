@@ -286,14 +286,26 @@ export default function BrokerDashboard() {
             ) : (
                 <>
                     <FunnelMetrics
-                        stageCounts={{
-                            novoLead: filteredLeads.filter(l => normalize(l.etapa_atual) === 'novo lead').length,
-                            qualificacao: filteredLeads.filter(l => normalize(l.etapa_atual) === 'qualificação').length,
-                            visita: filteredLeads.filter(l => normalize(l.etapa_atual) === 'visita').length,
-                            proposta: filteredLeads.filter(l => normalize(l.etapa_atual) === 'proposta').length,
-                            fechado: filteredLeads.filter(l => normalize(l.etapa_atual) === 'negócio fechado').length,
-                            perdido: filteredLeads.filter(l => normalize(l.etapa_atual) === 'perdido').length,
-                        }}
+                        stageCounts={(() => {
+                            // Cumulative counts: each stage includes leads at that stage OR beyond
+                            const stageOrder = ['novo lead', 'qualificação', 'visita', 'proposta', 'negócio fechado'];
+                            const getStageIndex = (stage) => stageOrder.indexOf(normalize(stage));
+
+                            const countAtOrBeyond = (minStageIndex) =>
+                                filteredLeads.filter(l => {
+                                    const idx = getStageIndex(l.etapa_atual);
+                                    return idx >= minStageIndex && normalize(l.etapa_atual) !== 'perdido';
+                                }).length;
+
+                            return {
+                                novoLead: countAtOrBeyond(0),        // All leads (except perdido)
+                                qualificacao: countAtOrBeyond(1),    // Qualificação or beyond
+                                visita: countAtOrBeyond(2),          // Visita or beyond
+                                proposta: countAtOrBeyond(3),        // Proposta or beyond
+                                fechado: countAtOrBeyond(4),         // Only Fechado
+                                perdido: filteredLeads.filter(l => normalize(l.etapa_atual) === 'perdido').length,
+                            };
+                        })()}
                         period={period}
                         onPeriodChange={setPeriod}
                     />
