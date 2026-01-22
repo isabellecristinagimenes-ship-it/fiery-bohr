@@ -227,7 +227,7 @@ export default function AdminDashboard() {
                 <div>
                     <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         Imobiliária CRM <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>(v6.0)</span>
-                        <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '10px', background: 'var(--primary)', color: 'white' }}>
+                        <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '10px', background: 'var(--primary)', color: '#0f172a', fontWeight: 600 }}>
                             ADMIN
                         </span>
                     </h1>
