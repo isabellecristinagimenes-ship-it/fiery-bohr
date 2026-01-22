@@ -204,6 +204,16 @@ export default function AdminDashboard() {
         </div>
     );
 
+    // Calculate days since last stage change (or entry if no stage change)
+    const getDaysInStage = (lead) => {
+        const stageDate = parseSheetDate(lead.data_mudancadeetapa) || parseSheetDate(lead.data_entrada);
+        if (!stageDate) return null;
+        const now = new Date();
+        const diffTime = Math.abs(now - stageDate);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    };
+
     const stages = ['Novo Lead', 'Qualificação', 'Visita', 'Proposta', 'Negócio Fechado', 'Perdido'];
 
     return (
@@ -407,7 +417,21 @@ export default function AdminDashboard() {
                                                                         ...provided.draggableProps.style
                                                                     }}
                                                                 >
-                                                                    <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{lead.nome_do_lead}</div>
+                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                                                                        <div style={{ fontWeight: 600 }}>{lead.nome_do_lead}</div>
+                                                                        <div style={{
+                                                                            fontSize: '0.7rem',
+                                                                            padding: '2px 6px',
+                                                                            borderRadius: '10px',
+                                                                            background: getDaysInStage(lead) > 7 ? 'rgba(239, 68, 68, 0.2)' :
+                                                                                getDaysInStage(lead) > 3 ? 'rgba(251, 191, 36, 0.2)' :
+                                                                                    'rgba(34, 197, 94, 0.2)',
+                                                                            color: getDaysInStage(lead) > 7 ? '#ef4444' :
+                                                                                getDaysInStage(lead) > 3 ? '#fbbf24' : '#22c55e'
+                                                                        }}>
+                                                                            {getDaysInStage(lead) ?? '-'}d
+                                                                        </div>
+                                                                    </div>
                                                                     <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                                                                         Imóvel: {lead.imovel}
                                                                     </div>
