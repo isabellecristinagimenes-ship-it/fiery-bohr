@@ -104,13 +104,22 @@ export default function AdminDashboard() {
         try {
             const config = { headers: { 'x-agency-id': user?.agencyId } };
 
-            const end = new Date();
-            let start = new Date();
+            let start, end;
 
-            if (period === 'current_year') {
-                start = new Date(new Date().getFullYear(), 0, 1); // Jan 1st of current year
-            } else {
+            if (period === 'custom' && customDateRange.start && customDateRange.end) {
+                start = new Date(customDateRange.start);
+                end = new Date(customDateRange.end);
+            } else if (period === 'current_year') {
+                start = new Date(new Date().getFullYear(), 0, 1);
+                end = new Date();
+            } else if (typeof period === 'number') {
+                end = new Date();
+                start = new Date();
                 start.setDate(end.getDate() - period);
+            } else {
+                end = new Date();
+                start = new Date();
+                start.setDate(end.getDate() - 30); // Default fallback
             }
 
             let query = `?startDate=${start.toISOString()}&endDate=${end.toISOString()}`;
@@ -140,7 +149,7 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         fetchRankings();
-    }, [period]);
+    }, [period, customDateRange]);
 
     const handleModalSuccess = () => {
         setIsModalOpen(false);
