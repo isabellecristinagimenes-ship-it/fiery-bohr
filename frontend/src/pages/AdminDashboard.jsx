@@ -11,7 +11,8 @@ import {
     MessageSquare,
     Plus,
     LogOut,
-    TrendingUp
+    TrendingUp,
+    Search
 } from 'lucide-react';
 import AddLeadModal from '../components/AddLeadModal';
 import EditLeadModal from '../components/EditLeadModal';
@@ -38,6 +39,7 @@ export default function AdminDashboard() {
     const [brokerRank, setBrokerRank] = useState([]);
     const [propRank, setPropRank] = useState([]);
     const [loadingRank, setLoadingRank] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Helper for safe comparison
     const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
@@ -359,17 +361,43 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="kanban-section">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                 <LayoutDashboard size={24} color="var(--primary)" />
                                 <h2 style={{ fontSize: '1.5rem' }}>Pipeline de Vendas</h2>
+                            </div>
+                            <div style={{ position: 'relative' }}>
+                                <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nome ou telefone..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    style={{
+                                        background: 'var(--bg-card)',
+                                        color: 'var(--text-main)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '0.5rem',
+                                        padding: '0.5rem 1rem 0.5rem 2.5rem',
+                                        width: '250px',
+                                        outline: 'none'
+                                    }}
+                                />
                             </div>
                         </div>
 
                         <DragDropContext onDragEnd={onDragEnd}>
                             <div className="kanban-grid">
                                 {stages.map((stage) => {
-                                    const stageLeads = filteredLeads.filter(l => normalize(l.etapa_atual) === normalize(stage));
+                                    const stageLeads = filteredLeads.filter(l => {
+                                        const matchesStage = normalize(l.etapa_atual) === normalize(stage);
+                                        if (!matchesStage) return false;
+                                        if (!searchQuery.trim()) return true;
+                                        const query = searchQuery.toLowerCase();
+                                        const matchesName = normalize(l.nome_do_lead).includes(query);
+                                        const matchesPhone = normalize(l.telefone).includes(query);
+                                        return matchesName || matchesPhone;
+                                    });
 
                                     return (
                                         <Droppable droppableId={stage} key={stage}>
