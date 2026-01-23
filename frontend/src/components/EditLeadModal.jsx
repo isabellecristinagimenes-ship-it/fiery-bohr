@@ -13,7 +13,9 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, currentUser, lead }) => {
         valor_do_imovel: '',
         origem: '',
         etapa_atual: '',
-        tipo_de_imovel: ''
+        tipo_de_imovel: '',
+        observacoes: '',
+        data_lembrete: ''
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -28,7 +30,9 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, currentUser, lead }) => {
                 valor_do_imovel: lead.valor_do_imovel || '',
                 origem: lead.origem || '',
                 etapa_atual: lead.etapa_atual || '',
-                tipo_de_imovel: lead.tipo_de_imovel || ''
+                tipo_de_imovel: lead.tipo_de_imovel || '',
+                observacoes: lead.observacoes || '',
+                data_lembrete: lead.data_lembrete || ''
             });
         }
     }, [lead]);
@@ -250,8 +254,55 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, currentUser, lead }) => {
                             <option value="Visita">Visita</option>
                             <option value="Proposta">Proposta</option>
                             <option value="Negócio Fechado">Negócio Fechado</option>
+                            <option value="Hibernação">Hibernação</option>
                             <option value="Perdido">Perdido</option>
                         </select>
+                    </div>
+
+                    {/* Lembrete */}
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                            🔔 Lembrete (Follow-up)
+                        </label>
+                        <input
+                            type="datetime-local"
+                            name="data_lembrete"
+                            value={formData.data_lembrete}
+                            onChange={handleChange}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                borderRadius: '0.5rem',
+                                border: '1px solid var(--border)',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'var(--text-main)',
+                                fontSize: '1rem'
+                            }}
+                        />
+                    </div>
+
+                    {/* Observações */}
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                            📝 Observações
+                        </label>
+                        <textarea
+                            name="observacoes"
+                            value={formData.observacoes}
+                            onChange={handleChange}
+                            rows={3}
+                            placeholder="Anotações sobre o lead, preferências, detalhes importantes..."
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                borderRadius: '0.5rem',
+                                border: '1px solid var(--border)',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'var(--text-main)',
+                                fontSize: '1rem',
+                                resize: 'vertical'
+                            }}
+                        />
                     </div>
 
                     <button

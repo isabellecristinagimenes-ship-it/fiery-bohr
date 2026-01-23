@@ -12,11 +12,13 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, currentUser }) => {
     const [formData, setFormData] = useState({
         nome_do_lead: '',
         telefone: '',
-        imovel: '', // Mantendo como "Interesse" ou detalhe
+        imovel: '',
         valor_do_imovel: '',
         origem: '',
-        outro_origem: '', // Para armazenar o texto digitado quando "Outro" é selecionado
-        tipo_de_imovel: ''
+        outro_origem: '',
+        tipo_de_imovel: '',
+        observacoes: '',
+        data_lembrete: ''
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -39,8 +41,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, currentUser }) => {
             const dataToSend = {
                 ...formData,
                 corretor: currentUser?.name || 'Desconhecido',
-                agencyId: currentUser?.agencyId, // Crucial for SaaS data isolation
-                // Se origem for "Outro", usa o valor digitado, senão usa o valor do select
+                agencyId: currentUser?.agencyId,
                 origem: formData.origem === 'Outro' ? formData.outro_origem : formData.origem
             };
 
@@ -57,7 +58,9 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, currentUser }) => {
                 valor_do_imovel: '',
                 origem: '',
                 outro_origem: '',
-                tipo_de_imovel: ''
+                tipo_de_imovel: '',
+                observacoes: '',
+                data_lembrete: ''
             });
             onSuccess();
             onClose();
@@ -279,6 +282,52 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess, currentUser }) => {
                                 }}
                             />
                         )}
+                    </div>
+
+                    {/* Lembrete */}
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                            🔔 Lembrete (Follow-up)
+                        </label>
+                        <input
+                            type="datetime-local"
+                            name="data_lembrete"
+                            value={formData.data_lembrete}
+                            onChange={handleChange}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                borderRadius: '0.5rem',
+                                border: '1px solid var(--border)',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'var(--text-main)',
+                                fontSize: '1rem'
+                            }}
+                        />
+                    </div>
+
+                    {/* Observações */}
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                            📝 Observações
+                        </label>
+                        <textarea
+                            name="observacoes"
+                            value={formData.observacoes}
+                            onChange={handleChange}
+                            rows={3}
+                            placeholder="Anotações sobre o lead, preferências, detalhes importantes..."
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                borderRadius: '0.5rem',
+                                border: '1px solid var(--border)',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'var(--text-main)',
+                                fontSize: '1rem',
+                                resize: 'vertical'
+                            }}
+                        />
                     </div>
 
                     <button
