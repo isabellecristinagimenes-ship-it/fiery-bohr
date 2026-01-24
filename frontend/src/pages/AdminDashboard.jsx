@@ -407,11 +407,12 @@ export default function AdminDashboard() {
                                             {(provided, snapshot) => (
                                                 <div
                                                     className="kanban-column"
-                                                    ref={provided.innerRef}
-                                                    {...provided.droppableProps}
                                                     style={{
                                                         background: snapshot.isDraggingOver ? 'rgba(255,255,255,0.02)' : '',
-                                                        border: snapshot.isDraggingOver ? '1px dashed var(--primary)' : ''
+                                                        border: snapshot.isDraggingOver ? '1px dashed var(--primary)' : '',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        maxHeight: '520px'
                                                     }}
                                                 >
                                                     <div className="column-header">
@@ -427,83 +428,93 @@ export default function AdminDashboard() {
                                                         </span>
                                                     </div>
 
-                                                    {stageLeads.map((lead, idx) => (
-                                                        <Draggable
-                                                            key={String(lead.id)}
-                                                            draggableId={String(lead.id)}
-                                                            index={idx}
-                                                        >
-                                                            {(provided, snapshot) => (
-                                                                <div
-                                                                    ref={provided.innerRef}
-                                                                    {...provided.draggableProps}
-                                                                    {...provided.dragHandleProps}
-                                                                    onClick={() => setEditingLead(lead)}
-                                                                    style={{
-                                                                        background: 'rgba(255,255,255,0.05)',
-                                                                        padding: '1rem',
-                                                                        borderRadius: '0.75rem',
-                                                                        border: '1px solid var(--border)',
-                                                                        marginBottom: '1rem',
-                                                                        cursor: 'grab',
-                                                                        boxShadow: snapshot.isDragging ? '0 10px 20px rgba(0,0,0,0.5)' : 'none',
-                                                                        transform: snapshot.isDragging ? 'scale(1.05)' : 'scale(1)',
-                                                                        ...provided.draggableProps.style
-                                                                    }}
-                                                                >
-                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                                                                        <div style={{ fontWeight: 600 }}>{lead.nome_do_lead}</div>
-                                                                        <div style={{
-                                                                            fontSize: '0.7rem',
-                                                                            padding: '2px 6px',
-                                                                            borderRadius: '10px',
-                                                                            background: getDaysInStage(lead) > 7 ? 'rgba(239, 68, 68, 0.2)' :
-                                                                                getDaysInStage(lead) > 3 ? 'rgba(251, 191, 36, 0.2)' :
-                                                                                    'rgba(34, 197, 94, 0.2)',
-                                                                            color: getDaysInStage(lead) > 7 ? '#ef4444' :
-                                                                                getDaysInStage(lead) > 3 ? '#fbbf24' : '#22c55e'
-                                                                        }}>
-                                                                            {getDaysInStage(lead) ?? '-'}d
-                                                                        </div>
-                                                                    </div>
-                                                                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-                                                                        Imóvel: {lead.imovel}
-                                                                    </div>
-                                                                    {lead.origem && (
-                                                                        <div style={{ fontSize: '0.7rem', color: 'var(--accent-purple)', marginBottom: '0.25rem' }}>
-                                                                            📍 {lead.origem}
-                                                                        </div>
-                                                                    )}
-
-                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', marginBottom: '1rem' }}>
-                                                                        👤 {lead.corretor || 'Sem corretor'}
-                                                                    </div>
-
-                                                                    <button
-                                                                        onClick={(e) => openWhatsApp(e, lead.telefone)}
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.droppableProps}
+                                                        style={{
+                                                            flex: 1,
+                                                            overflowY: 'auto',
+                                                            paddingRight: '4px'
+                                                        }}
+                                                    >
+                                                        {stageLeads.map((lead, idx) => (
+                                                            <Draggable
+                                                                key={String(lead.id)}
+                                                                draggableId={String(lead.id)}
+                                                                index={idx}
+                                                            >
+                                                                {(provided, snapshot) => (
+                                                                    <div
+                                                                        ref={provided.innerRef}
+                                                                        {...provided.draggableProps}
+                                                                        {...provided.dragHandleProps}
+                                                                        onClick={() => setEditingLead(lead)}
                                                                         style={{
-                                                                            width: '100%',
-                                                                            background: '#25D366',
-                                                                            color: '#fff',
-                                                                            border: 'none',
-                                                                            padding: '0.5rem',
-                                                                            borderRadius: '0.5rem',
-                                                                            display: 'flex',
-                                                                            alignItems: 'center',
-                                                                            justifyContent: 'center',
-                                                                            gap: '0.5rem',
-                                                                            cursor: 'pointer',
-                                                                            fontWeight: 600
+                                                                            background: 'rgba(255,255,255,0.05)',
+                                                                            padding: '1rem',
+                                                                            borderRadius: '0.75rem',
+                                                                            border: '1px solid var(--border)',
+                                                                            marginBottom: '1rem',
+                                                                            cursor: 'grab',
+                                                                            boxShadow: snapshot.isDragging ? '0 10px 20px rgba(0,0,0,0.5)' : 'none',
+                                                                            transform: snapshot.isDragging ? 'scale(1.05)' : 'scale(1)',
+                                                                            ...provided.draggableProps.style
                                                                         }}
                                                                     >
-                                                                        <MessageSquare size={16} />
-                                                                        WhatsApp
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </Draggable>
-                                                    ))}
-                                                    {provided.placeholder}
+                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                                                                            <div style={{ fontWeight: 600 }}>{lead.nome_do_lead}</div>
+                                                                            <div style={{
+                                                                                fontSize: '0.7rem',
+                                                                                padding: '2px 6px',
+                                                                                borderRadius: '10px',
+                                                                                background: getDaysInStage(lead) > 7 ? 'rgba(239, 68, 68, 0.2)' :
+                                                                                    getDaysInStage(lead) > 3 ? 'rgba(251, 191, 36, 0.2)' :
+                                                                                        'rgba(34, 197, 94, 0.2)',
+                                                                                color: getDaysInStage(lead) > 7 ? '#ef4444' :
+                                                                                    getDaysInStage(lead) > 3 ? '#fbbf24' : '#22c55e'
+                                                                            }}>
+                                                                                {getDaysInStage(lead) ?? '-'}d
+                                                                            </div>
+                                                                        </div>
+                                                                        <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                                                                            Imóvel: {lead.imovel}
+                                                                        </div>
+                                                                        {lead.origem && (
+                                                                            <div style={{ fontSize: '0.7rem', color: 'var(--accent-purple)', marginBottom: '0.25rem' }}>
+                                                                                📍 {lead.origem}
+                                                                            </div>
+                                                                        )}
+
+                                                                        <div style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', marginBottom: '1rem' }}>
+                                                                            👤 {lead.corretor || 'Sem corretor'}
+                                                                        </div>
+
+                                                                        <button
+                                                                            onClick={(e) => openWhatsApp(e, lead.telefone)}
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                background: '#25D366',
+                                                                                color: '#fff',
+                                                                                border: 'none',
+                                                                                padding: '0.5rem',
+                                                                                borderRadius: '0.5rem',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                gap: '0.5rem',
+                                                                                cursor: 'pointer',
+                                                                                fontWeight: 600
+                                                                            }}
+                                                                        >
+                                                                            <MessageSquare size={16} />
+                                                                            WhatsApp
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </Draggable>
+                                                        ))}
+                                                        {provided.placeholder}
+                                                    </div>
                                                 </div>
                                             )}
                                         </Droppable>
