@@ -429,9 +429,9 @@ export default function BrokerDashboard() {
                                                         {...provided.droppableProps}
                                                         className="cards-container"
                                                         style={{
-                                                            flex: 1,
-                                                            overflowY: 'auto',
-                                                            paddingRight: '4px'
+                                                            height: '420px',
+                                                            overflowY: 'scroll',
+                                                            paddingRight: '8px'
                                                         }}
                                                     >
                                                         {stageLeads.map((lead, idx) => (
