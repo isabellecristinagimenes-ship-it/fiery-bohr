@@ -235,9 +235,10 @@ export default function AdminDashboard() {
                         Bem-vindo, {user?.name}
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem' }} className="header-actions">
                     <button
                         onClick={() => setIsModalOpen(true)}
+                        className="header-new-lead-btn"
                         style={{
                             background: 'var(--primary)',
                             border: 'none',
@@ -541,6 +542,15 @@ export default function AdminDashboard() {
                 currentUser={user}
                 lead={editingLead}
             />
+
+            {/* FAB for mobile */}
+            <button
+                className="fab"
+                onClick={() => setIsModalOpen(true)}
+                aria-label="Novo Lead"
+            >
+                <Plus size={28} />
+            </button>
         </div>
     );
 }

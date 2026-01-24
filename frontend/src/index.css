@@ -187,3 +187,58 @@ h1 {
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
+
+/* Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: none;
+  color: #0f172a;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(226, 165, 2, 0.4);
+  z-index: 1000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(226, 165, 2, 0.5);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+/* Hide header button on mobile, show FAB */
+@media (max-width: 768px) {
+  .header-new-lead-btn {
+    display: none !important;
+  }
+
+  .fab {
+    display: flex;
+  }
+
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
