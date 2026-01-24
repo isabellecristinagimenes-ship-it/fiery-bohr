@@ -125,6 +125,30 @@ h1 {
   border: 1px dashed var(--border);
 }
 
+/* Scrollbar sempre visível nas colunas do Kanban */
+.kanban-column .cards-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) rgba(255, 255, 255, 0.1);
+}
+
+.kanban-column .cards-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.kanban-column .cards-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.kanban-column .cards-container::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+.kanban-column .cards-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+}
+
 .column-header {
   padding: 0.75rem;
   margin-bottom: 1rem;

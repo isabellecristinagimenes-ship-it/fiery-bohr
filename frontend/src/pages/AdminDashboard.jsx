@@ -431,6 +431,7 @@ export default function AdminDashboard() {
                                                     <div
                                                         ref={provided.innerRef}
                                                         {...provided.droppableProps}
+                                                        className="cards-container"
                                                         style={{
                                                             flex: 1,
                                                             overflowY: 'auto',

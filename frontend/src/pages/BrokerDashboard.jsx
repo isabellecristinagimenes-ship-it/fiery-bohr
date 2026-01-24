@@ -427,6 +427,7 @@ export default function BrokerDashboard() {
                                                     <div
                                                         ref={provided.innerRef}
                                                         {...provided.droppableProps}
+                                                        className="cards-container"
                                                         style={{
                                                             flex: 1,
                                                             overflowY: 'auto',
