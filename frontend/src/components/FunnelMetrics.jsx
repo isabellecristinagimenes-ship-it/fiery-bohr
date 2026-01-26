@@ -57,49 +57,40 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
                             background: `linear-gradient(135deg, ${stage.color}20, ${stage.color}10)`,
                             border: `1px solid ${stage.color}50`,
                             borderRadius: index === 0 ? '1rem 1rem 0 0' : index === stages.length - 1 ? '0 0 1rem 1rem' : '0',
-                            padding: '1rem',
+                            padding: '0.75rem 1rem',
                             display: 'flex',
-                            justifyContent: 'space-between',
+                            flexDirection: 'column',
                             alignItems: 'center',
+                            justifyContent: 'center',
+                            textAlign: 'center',
                             position: 'relative',
                             marginTop: index === 0 ? 0 : '-1px'
                         }}>
-                            <div>
-                                <div style={{
-                                    fontSize: '0.65rem',
-                                    color: 'var(--text-muted)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em'
-                                }}>
-                                    {stage.label}
-                                </div>
-                                <div style={{
-                                    fontSize: '1.5rem',
-                                    fontWeight: 700,
-                                    color: stage.color
-                                }}>
-                                    {count}
-                                </div>
+                            <div style={{
+                                fontSize: '0.65rem',
+                                color: 'var(--text-muted)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
+                            }}>
+                                {stage.label}
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                                {index > 0 && (
-                                    <>
-                                        <div style={{
-                                            fontSize: '0.85rem',
-                                            color: rateVsPrev >= 50 ? '#22c55e' : rateVsPrev >= 25 ? '#fbbf24' : '#ef4444',
-                                            fontWeight: 600
-                                        }}>
-                                            {rateVsPrev}%
-                                        </div>
-                                        <div style={{
-                                            fontSize: '0.6rem',
-                                            color: 'var(--text-muted)'
-                                        }}>
-                                            {rateVsTotal}% total
-                                        </div>
-                                    </>
-                                )}
+                            <div style={{
+                                fontSize: '1.75rem',
+                                fontWeight: 700,
+                                color: stage.color
+                            }}>
+                                {count}
                             </div>
+                            {index > 0 && (
+                                <div style={{
+                                    fontSize: '0.7rem',
+                                    color: rateVsPrev >= 50 ? '#22c55e' : rateVsPrev >= 25 ? '#fbbf24' : '#ef4444',
+                                    fontWeight: 600,
+                                    marginTop: '0.25rem'
+                                }}>
+                                    {rateVsPrev}% <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>({rateVsTotal}% total)</span>
+                                </div>
+                            )}
                         </div>
                     </React.Fragment>
                 );
