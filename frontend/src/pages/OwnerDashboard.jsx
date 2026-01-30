@@ -490,8 +490,8 @@ export default function OwnerDashboard() {
                     Rankings
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                    <BrokerRankingWidget rankings={brokerRank} loading={loadingRank} />
-                    <PropertyRankingWidget rankings={propRank} loading={loadingRank} />
+                    <BrokerRankingWidget data={brokerRank || []} loading={loadingRank} />
+                    <PropertyRankingWidget data={propRank || []} loading={loadingRank} />
                 </div>
             </section>
 
