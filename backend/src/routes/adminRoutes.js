@@ -113,4 +113,44 @@ router.get('/users/:agencyId', async (req, res) => {
     }
 });
 
+// Update User Role by Email
+router.put('/users/role', async (req, res) => {
+    try {
+        const { email, role } = req.body;
+
+        if (!email || !role) {
+            return res.status(400).json({ error: 'Email e role são obrigatórios.' });
+        }
+
+        const user = await User.findOne({ where: { email: email.toLowerCase() } });
+        if (!user) {
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+
+        user.role = role;
+        await user.save();
+
+        res.json({
+            message: 'Role atualizado com sucesso!',
+            user: { id: user.id, name: user.name, email: user.email, role: user.role }
+        });
+    } catch (error) {
+        console.error('Update Role Error:', error);
+        res.status(500).json({ error: 'Erro ao atualizar role.' });
+    }
+});
+
+// List All Users (for debugging)
+router.get('/users', async (req, res) => {
+    try {
+        const users = await User.findAll({
+            attributes: ['id', 'name', 'email', 'role', 'agencyId']
+        });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao listar usuários' });
+    }
+});
+
 module.exports = router;
+
