@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import MasterAdmin from './pages/MasterAdmin';
 import AdminDashboard from './pages/AdminDashboard';
 import BrokerDashboard from './pages/BrokerDashboard';
+import OwnerDashboard from './pages/OwnerDashboard';
 import ErrorBoundary from './components/ErrorBoundary';
 
 function AppContent() {
@@ -22,8 +23,10 @@ function AppContent() {
     return <LoginPage />;
   }
 
-  // Routing Logic
-  if (user?.role === 'admin' || user?.role === 'owner') {
+  // Routing Logic by role
+  if (user?.role === 'owner') {
+    return <OwnerDashboard />;
+  } else if (user?.role === 'admin') {
     return <AdminDashboard />;
   } else {
     return <BrokerDashboard />;
