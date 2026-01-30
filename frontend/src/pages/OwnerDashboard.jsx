@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    Users,
     TrendingUp,
-    Target,
     Award,
-    BarChart3,
     RefreshCcw,
     LogOut,
-    Building2,
-    DollarSign,
-    Calendar,
     Filter,
-    ChevronDown,
-    UserCheck,
     Clock
 } from 'lucide-react';
 import BrokerRankingWidget from '../components/BrokerRankingWidget';
@@ -319,49 +311,7 @@ export default function OwnerDashboard() {
                 </div>
             </header>
 
-            {/* Key Metrics Overview */}
-            <section style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <BarChart3 size={24} color="var(--primary)" />
-                    Resumo Executivo
-                </h2>
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                    gap: '1rem'
-                }}>
-                    <MetricCard
-                        label="Total de Leads"
-                        value={totalLeads}
-                        icon={Users}
-                        color="#6366f1"
-                        subtitle="No período selecionado"
-                    />
-                    <MetricCard
-                        label="Vendas Fechadas"
-                        value={totalFechados}
-                        icon={Target}
-                        color="#22c55e"
-                        subtitle={`${conversionRate}% conversão`}
-                    />
-                    <MetricCard
-                        label="Corretores Ativos"
-                        value={activeBrokers}
-                        icon={UserCheck}
-                        color="#f59e0b"
-                        subtitle="Com leads no período"
-                    />
-                    <MetricCard
-                        label="Em Negociação"
-                        value={stageCounts.proposta}
-                        icon={DollarSign}
-                        color="#8b5cf6"
-                        subtitle="Propostas enviadas"
-                    />
-                </div>
-            </section>
-
-            {/* Funnel Metrics */}
+            {/* Funnel Metrics - Main visualization */}
             <FunnelMetrics
                 stageCounts={stageCounts}
                 period={period}
