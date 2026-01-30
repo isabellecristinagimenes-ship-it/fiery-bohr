@@ -191,36 +191,33 @@ export default function OwnerDashboard() {
 
     const brokerMetrics = calculateBrokerMetrics();
 
-    // Calculate stage counts for funnel
+    // Calculate stage counts for funnel (cumulative - each stage shows leads that reached AT LEAST that stage)
+    // Helper to check which stage a lead has reached
+    const getStageLevel = (stage) => {
+        const s = stage?.toLowerCase() || '';
+        if (s.includes('fechado') || s.includes('venda')) return 5;
+        if (s.includes('proposta')) return 4;
+        if (s.includes('visita')) return 3;
+        if (s.includes('qualifica')) return 2;
+        if (s.includes('hiberna')) return -1; // Out of funnel
+        if (s.includes('perdido')) return -2; // Out of funnel
+        return 1; // Novo Lead is default
+    };
+
     const stageCounts = {
-        novoLead: filteredLeads.filter(l => {
-            const s = l.etapa_atual?.toLowerCase() || '';
-            return s.includes('novo') || s.includes('lead');
-        }).length,
-        qualificacao: filteredLeads.filter(l => {
-            const s = l.etapa_atual?.toLowerCase() || '';
-            return s.includes('qualifica') || s.includes('novo') || s.includes('lead');
-        }).length,
-        visita: filteredLeads.filter(l => {
-            const s = l.etapa_atual?.toLowerCase() || '';
-            return s.includes('visita') || s.includes('qualifica') || s.includes('novo') || s.includes('lead');
-        }).length,
-        proposta: filteredLeads.filter(l => {
-            const s = l.etapa_atual?.toLowerCase() || '';
-            return s.includes('proposta') || s.includes('visita') || s.includes('qualifica');
-        }).length,
-        fechado: filteredLeads.filter(l => {
-            const s = l.etapa_atual?.toLowerCase() || '';
-            return s.includes('fechado') || s.includes('venda');
-        }).length,
-        hibernacao: filteredLeads.filter(l => {
-            const s = l.etapa_atual?.toLowerCase() || '';
-            return s.includes('hiberna');
-        }).length,
-        perdido: filteredLeads.filter(l => {
-            const s = l.etapa_atual?.toLowerCase() || '';
-            return s.includes('perdido');
-        }).length
+        // Novo Lead = ALL leads in the active funnel (excluding hibernação and perdidos)
+        novoLead: filteredLeads.filter(l => getStageLevel(l.etapa_atual) >= 1).length,
+        // Qualificação = leads that reached level 2 or beyond
+        qualificacao: filteredLeads.filter(l => getStageLevel(l.etapa_atual) >= 2).length,
+        // Visita = leads that reached level 3 or beyond
+        visita: filteredLeads.filter(l => getStageLevel(l.etapa_atual) >= 3).length,
+        // Proposta = leads that reached level 4 or beyond
+        proposta: filteredLeads.filter(l => getStageLevel(l.etapa_atual) >= 4).length,
+        // Fechado = only level 5
+        fechado: filteredLeads.filter(l => getStageLevel(l.etapa_atual) === 5).length,
+        // Hibernação and Perdidos are separate
+        hibernacao: filteredLeads.filter(l => getStageLevel(l.etapa_atual) === -1).length,
+        perdido: filteredLeads.filter(l => getStageLevel(l.etapa_atual) === -2).length
     };
 
     // Calculate overall metrics
