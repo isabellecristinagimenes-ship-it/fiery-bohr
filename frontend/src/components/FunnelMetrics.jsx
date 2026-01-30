@@ -26,7 +26,7 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
     ];
 
     // Get total (first stage count) for percentage calculations
-    const total = stageCounts.novoLead || 1;
+    const total = stageCounts?.novoLead || 1;
 
     const inputStyle = {
         background: 'var(--bg-card)',
@@ -44,8 +44,8 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
     const renderMobileFunnel = () => (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
             {stages.map((stage, index) => {
-                const count = stageCounts[stage.key] || 0;
-                const prevCount = index > 0 ? (stageCounts[stages[index - 1].key] || 0) : count;
+                const count = stageCounts?.[stage.key] || 0;
+                const prevCount = index > 0 ? (stageCounts?.[stages[index - 1].key] || 0) : count;
                 const rateVsPrev = index === 0 ? 100 : (prevCount > 0 ? Math.round((count / prevCount) * 100) : 0);
                 const rateVsTotal = Math.round((count / total) * 100);
 
@@ -104,7 +104,7 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
                 width: '100%',
                 justifyContent: 'center'
             }}>
-                {stageCounts.hibernacao > 0 && (
+                {(stageCounts?.hibernacao || 0) > 0 && (
                     <div style={{
                         background: 'rgba(148, 163, 184, 0.1)',
                         border: '1px solid rgba(148, 163, 184, 0.3)',
@@ -118,11 +118,11 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
                             💤 HIBERNAÇÃO
                         </div>
                         <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#94a3b8' }}>
-                            {stageCounts.hibernacao}
+                            {stageCounts?.hibernacao || 0}
                         </div>
                     </div>
                 )}
-                {stageCounts.perdido > 0 && (
+                {(stageCounts?.perdido || 0) > 0 && (
                     <div style={{
                         background: 'rgba(239, 68, 68, 0.1)',
                         border: '1px solid rgba(239, 68, 68, 0.3)',
@@ -136,7 +136,7 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
                             ✕ PERDIDOS
                         </div>
                         <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ef4444' }}>
-                            {stageCounts.perdido}
+                            {stageCounts?.perdido || 0}
                         </div>
                     </div>
                 )}
@@ -155,8 +155,8 @@ const FunnelMetrics = ({ stageCounts, period, onPeriodChange, customDateRange, o
                 gap: '0.5rem'
             }}>
                 {stages.map((stage, index) => {
-                    const count = stageCounts[stage.key] || 0;
-                    const prevCount = index > 0 ? (stageCounts[stages[index - 1].key] || 0) : count;
+                    const count = stageCounts?.[stage.key] || 0;
+                    const prevCount = index > 0 ? (stageCounts?.[stages[index - 1].key] || 0) : count;
 
                     // Rate vs previous stage
                     const rateVsPrev = index === 0 ? 100 : (prevCount > 0 ? Math.round((count / prevCount) * 100) : 0);
