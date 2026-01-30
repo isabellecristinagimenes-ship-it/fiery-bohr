@@ -68,6 +68,33 @@ app.post('/admin/users', async (req, res) => {
     res.json(user);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+// List all users
+app.get('/admin/users', async (req, res) => {
+  try {
+    const users = await User.findAll({ attributes: ['id', 'name', 'email', 'role', 'agencyId'] });
+    res.json(users);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Update user role by email
+app.put('/admin/users/role', async (req, res) => {
+  try {
+    const { email, role } = req.body;
+    if (!email || !role) return res.status(400).json({ error: 'Email e role são obrigatórios.' });
+
+    const user = await User.findOne({ where: { email: email.toLowerCase() } });
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+    user.role = role;
+    await user.save();
+
+    res.json({ message: 'Role atualizado!', user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  } catch (e) {
+    console.error('Update Role Error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
 // ----------------------------------------
 
 app.get('/', (req, res) => res.json({ status: 'ok', service: 'fiery-bohr-backend', version: 'v19.0-INLINED' }));
