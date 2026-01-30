@@ -26,7 +26,7 @@ function AppContent() {
   // Routing Logic by role
   if (user?.role === 'owner') {
     return <OwnerDashboard />;
-  } else if (user?.role === 'admin') {
+  } else if (user?.role === 'admin' || user?.role === 'gerente') {
     return <AdminDashboard />;
   } else {
     return <BrokerDashboard />;
