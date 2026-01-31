@@ -307,6 +307,70 @@ export default function OwnerDashboard() {
 
     const insights = generateInsights();
 
+    // ==========================================
+    // ⚠️ STRATEGIC RISKS - Ongoing risks detection
+    // ==========================================
+    const generateRisks = () => {
+        const risks = [];
+        const today = new Date();
+
+        // Risk 1: Qualified leads stuck without visit (> 7 days)
+        const qualifiedStuck = filteredLeads.filter(l => {
+            const s = l.etapa_atual?.toLowerCase() || '';
+            if (!s.includes('qualifica')) return false;
+            const stageDate = parseSheetDate(l.data_mudancadeetapa) || parseSheetDate(l.data_entrada);
+            if (!stageDate) return false;
+            const daysSince = Math.floor((today - stageDate) / (1000 * 60 * 60 * 24));
+            return daysSince >= 7;
+        });
+        if (qualifiedStuck.length >= 2) {
+            risks.push(`${qualifiedStuck.length} leads qualificados parados há mais de 7 dias sem agendar visita.`);
+        }
+
+        // Risk 2: High hibernation growth
+        const hibernationRate = totalLeads > 0 ? Math.round((stageCounts.hibernacao / totalLeads) * 100) : 0;
+        if (stageCounts.hibernacao >= 3 && hibernationRate >= 25) {
+            risks.push(`Acúmulo de leads em hibernação: ${stageCounts.hibernacao} leads (${hibernationRate}% do total).`);
+        }
+
+        // Risk 3: Proposals stuck (> 10 days without closing)
+        const proposalsStuck = filteredLeads.filter(l => {
+            const s = l.etapa_atual?.toLowerCase() || '';
+            if (!s.includes('proposta')) return false;
+            const stageDate = parseSheetDate(l.data_mudancadeetapa) || parseSheetDate(l.data_entrada);
+            if (!stageDate) return false;
+            const daysSince = Math.floor((today - stageDate) / (1000 * 60 * 60 * 24));
+            return daysSince >= 10;
+        });
+        if (proposalsStuck.length >= 2) {
+            risks.push(`${proposalsStuck.length} propostas sem definição há mais de 10 dias.`);
+        }
+
+        // Risk 4: High volume of new leads without advancement
+        const newLeadsStuck = filteredLeads.filter(l => {
+            const level = getStageLevel(l.etapa_atual);
+            if (level !== 1) return false; // Only "Novo Lead"
+            const entryDate = parseSheetDate(l.data_entrada);
+            if (!entryDate) return false;
+            const daysSince = Math.floor((today - entryDate) / (1000 * 60 * 60 * 24));
+            return daysSince >= 5;
+        });
+        if (newLeadsStuck.length >= 3) {
+            risks.push(`${newLeadsStuck.length} leads novos sem qualquer avanço há mais de 5 dias.`);
+        }
+
+        // Risk 5: High loss rate
+        const lossRate = totalLeads > 0 ? Math.round((stageCounts.perdido / totalLeads) * 100) : 0;
+        if (stageCounts.perdido >= 3 && lossRate >= 20) {
+            risks.push(`Taxa de perda elevada: ${lossRate}% dos leads do período foram perdidos.`);
+        }
+
+        // Limit to 3 risks
+        return risks.slice(0, 3);
+    };
+
+    const risks = generateRisks();
+
     const MetricCard = ({ label, value, icon: Icon, color, subtitle }) => (
         <div className="metric-card" style={{ minWidth: '180px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -449,6 +513,53 @@ export default function OwnerDashboard() {
                                     color: 'var(--text-main)'
                                 }}>
                                     {insight}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </section>
+
+            {/* ⚠️ Riscos em curso - Strategic Risk Alerts */}
+            <section style={{ marginBottom: '2rem' }}>
+                <h2 style={{
+                    fontSize: '1.25rem',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                }}>
+                    ⚠️ Riscos em curso
+                </h2>
+                <div style={{
+                    background: risks.length > 0 ? 'rgba(251, 191, 36, 0.05)' : 'var(--bg-card)',
+                    borderRadius: '1rem',
+                    border: risks.length > 0 ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid var(--border)',
+                    padding: '1.25rem'
+                }}>
+                    {risks.length === 0 ? (
+                        <p style={{
+                            color: 'var(--text-muted)',
+                            margin: 0,
+                            fontStyle: 'italic'
+                        }}>
+                            Nenhum risco relevante identificado no período.
+                        </p>
+                    ) : (
+                        <ul style={{
+                            margin: 0,
+                            paddingLeft: '1.25rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem'
+                        }}>
+                            {risks.map((risk, idx) => (
+                                <li key={idx} style={{
+                                    fontSize: '0.95rem',
+                                    lineHeight: 1.5,
+                                    color: '#fbbf24'
+                                }}>
+                                    {risk}
                                 </li>
                             ))}
                         </ul>
