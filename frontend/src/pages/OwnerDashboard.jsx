@@ -218,6 +218,95 @@ export default function OwnerDashboard() {
     const conversionRate = totalLeads > 0 ? Math.round((totalFechados / totalLeads) * 100) : 0;
     const activeBrokers = brokerMetrics.length;
 
+    // ==========================================
+    // 💰 AUTOMATIC INSIGHTS - Where money is coming from
+    // ==========================================
+    const generateInsights = () => {
+        const insights = [];
+        const MIN_PERCENTAGE = 50; // Only show if >= 50%
+        const MIN_LEADS = 3; // Minimum leads to consider a pattern
+
+        // Helper to count by field
+        const countByField = (field, filterFn = () => true) => {
+            const counts = {};
+            filteredLeads.filter(filterFn).forEach(lead => {
+                const value = lead[field];
+                if (value && value.trim()) {
+                    const key = value.trim().toLowerCase();
+                    counts[key] = (counts[key] || 0) + 1;
+                }
+            });
+            return counts;
+        };
+
+        // Helper to find dominant segment
+        const findDominant = (counts, total) => {
+            if (total < MIN_LEADS) return null;
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            if (sorted.length === 0) return null;
+            const [topKey, topCount] = sorted[0];
+            const percentage = Math.round((topCount / total) * 100);
+            if (percentage >= MIN_PERCENTAGE) {
+                return { key: topKey, count: topCount, percentage };
+            }
+            return null;
+        };
+
+        // 1. Property type with most qualified leads
+        const qualifiedLeads = filteredLeads.filter(l => getStageLevel(l.etapa_atual) >= 2);
+        const tipoCountsQualified = countByField('tipo', l => getStageLevel(l.etapa_atual) >= 2);
+        const dominantTipo = findDominant(tipoCountsQualified, qualifiedLeads.length);
+        if (dominantTipo) {
+            insights.push(`Imóveis do tipo "${dominantTipo.key}" concentram ${dominantTipo.percentage}% dos leads qualificados.`);
+        }
+
+        // 2. Lead origin with best quality (highest qualification rate)
+        const origemCounts = countByField('origem');
+        const origemQualified = countByField('origem', l => getStageLevel(l.etapa_atual) >= 2);
+        let bestOrigem = null;
+        let bestOrigemRate = 0;
+        Object.keys(origemCounts).forEach(origem => {
+            const total = origemCounts[origem];
+            const qualified = origemQualified[origem] || 0;
+            if (total >= MIN_LEADS) {
+                const rate = Math.round((qualified / total) * 100);
+                if (rate >= MIN_PERCENTAGE && rate > bestOrigemRate) {
+                    bestOrigem = origem;
+                    bestOrigemRate = rate;
+                }
+            }
+        });
+        if (bestOrigem) {
+            insights.push(`Leads vindos de "${bestOrigem}" têm a melhor qualificação (${bestOrigemRate}%).`);
+        }
+
+        // 3. Closed deals concentration by property type
+        const closedLeads = filteredLeads.filter(l => getStageLevel(l.etapa_atual) === 5);
+        const tipoCountsClosed = countByField('tipo', l => getStageLevel(l.etapa_atual) === 5);
+        const dominantTipoClosed = findDominant(tipoCountsClosed, closedLeads.length);
+        if (dominantTipoClosed && closedLeads.length >= 2) {
+            insights.push(`${dominantTipoClosed.percentage}% das vendas fechadas são em "${dominantTipoClosed.key}".`);
+        }
+
+        // 4. High volume but low interest segments
+        const tipoCounts = countByField('tipo');
+        Object.keys(tipoCounts).forEach(tipo => {
+            const total = tipoCounts[tipo];
+            const qualified = tipoCountsQualified[tipo] || 0;
+            if (total >= MIN_LEADS) {
+                const rate = Math.round((qualified / total) * 100);
+                if (rate < 20 && total >= 5) {
+                    insights.push(`"${tipo.charAt(0).toUpperCase() + tipo.slice(1)}" tem volume (${total} leads) mas baixa qualificação (${rate}%).`);
+                }
+            }
+        });
+
+        // Limit to 4 insights
+        return insights.slice(0, 4);
+    };
+
+    const insights = generateInsights();
+
     const MetricCard = ({ label, value, icon: Icon, color, subtitle }) => (
         <div className="metric-card" style={{ minWidth: '180px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -319,6 +408,53 @@ export default function OwnerDashboard() {
                 customDateRange={customDateRange}
                 onCustomDateChange={setCustomDateRange}
             />
+
+            {/* 💰 Where is it working - Automatic Insights */}
+            <section style={{ marginBottom: '2rem' }}>
+                <h2 style={{
+                    fontSize: '1.25rem',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                }}>
+                    💰 Onde está funcionando
+                </h2>
+                <div style={{
+                    background: 'var(--bg-card)',
+                    borderRadius: '1rem',
+                    border: '1px solid var(--border)',
+                    padding: '1.25rem'
+                }}>
+                    {insights.length === 0 ? (
+                        <p style={{
+                            color: 'var(--text-muted)',
+                            margin: 0,
+                            fontStyle: 'italic'
+                        }}>
+                            Distribuição equilibrada no período.
+                        </p>
+                    ) : (
+                        <ul style={{
+                            margin: 0,
+                            paddingLeft: '1.25rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem'
+                        }}>
+                            {insights.map((insight, idx) => (
+                                <li key={idx} style={{
+                                    fontSize: '0.95rem',
+                                    lineHeight: 1.5,
+                                    color: 'var(--text-main)'
+                                }}>
+                                    {insight}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </section>
 
             {/* Broker Performance Table */}
             <section style={{ marginBottom: '2rem' }}>
