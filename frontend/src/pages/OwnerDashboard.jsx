@@ -218,6 +218,117 @@ export default function OwnerDashboard() {
     const conversionRate = totalLeads > 0 ? Math.round((totalFechados / totalLeads) * 100) : 0;
     const activeBrokers = brokerMetrics.length;
 
+    // ==========================================
+    // 1) AUTOMATIC FUNNEL BOTTLENECK DETECTION
+    // ==========================================
+    const calculateBottleneck = () => {
+        const transitions = [
+            { from: 'Novo Lead', to: 'Qualificação', fromCount: stageCounts.novoLead, toCount: stageCounts.qualificacao },
+            { from: 'Qualificação', to: 'Visita', fromCount: stageCounts.qualificacao, toCount: stageCounts.visita },
+            { from: 'Visita', to: 'Proposta', fromCount: stageCounts.visita, toCount: stageCounts.proposta },
+            { from: 'Proposta', to: 'Fechado', fromCount: stageCounts.proposta, toCount: stageCounts.fechado }
+        ];
+
+        // Filter transitions with sufficient volume (at least 3 leads in source)
+        const validTransitions = transitions.filter(t => t.fromCount >= 3);
+
+        if (validTransitions.length === 0) return null;
+
+        // Calculate rates and find the lowest
+        const withRates = validTransitions.map(t => ({
+            ...t,
+            rate: t.fromCount > 0 ? Math.round((t.toCount / t.fromCount) * 100) : 0
+        }));
+
+        return withRates.reduce((min, t) => t.rate < min.rate ? t : min, withRates[0]);
+    };
+
+    const bottleneck = calculateBottleneck();
+
+    // ==========================================
+    // 3) STRATEGIC SIGNALS (Sinais de Atenção)
+    // ==========================================
+    const generateSignals = () => {
+        const signals = [];
+        const today = new Date();
+
+        // Signal 1: Qualified leads without visit for more than 7 days
+        const qualifiedNoVisit = filteredLeads.filter(l => {
+            const s = l.etapa_atual?.toLowerCase() || '';
+            if (!s.includes('qualifica')) return false;
+            const stageDate = parseSheetDate(l.data_mudancadeetapa) || parseSheetDate(l.data_entrada);
+            if (!stageDate) return false;
+            const daysSince = Math.floor((today - stageDate) / (1000 * 60 * 60 * 24));
+            return daysSince >= 7;
+        });
+        if (qualifiedNoVisit.length > 0) {
+            signals.push({
+                type: 'warning',
+                icon: '⏳',
+                message: `${qualifiedNoVisit.length} lead${qualifiedNoVisit.length > 1 ? 's' : ''} qualificado${qualifiedNoVisit.length > 1 ? 's' : ''} sem agendar visita há mais de 7 dias`
+            });
+        }
+
+        // Signal 2: High hibernation rate
+        const hibernationRate = totalLeads > 0 ? Math.round((stageCounts.hibernacao / totalLeads) * 100) : 0;
+        if (stageCounts.hibernacao >= 3 && hibernationRate >= 20) {
+            signals.push({
+                type: 'alert',
+                icon: '💤',
+                message: `${hibernationRate}% dos leads estão em hibernação (${stageCounts.hibernacao} leads)`
+            });
+        }
+
+        // Signal 3: High loss rate
+        const lossRate = totalLeads > 0 ? Math.round((stageCounts.perdido / totalLeads) * 100) : 0;
+        if (stageCounts.perdido >= 3 && lossRate >= 15) {
+            signals.push({
+                type: 'critical',
+                icon: '❌',
+                message: `Taxa de perda elevada: ${lossRate}% dos leads foram perdidos`
+            });
+        }
+
+        // Signal 4: Proposals stuck (proposals > 10 days without closing)
+        const proposalsStuck = filteredLeads.filter(l => {
+            const s = l.etapa_atual?.toLowerCase() || '';
+            if (!s.includes('proposta')) return false;
+            const stageDate = parseSheetDate(l.data_mudancadeetapa) || parseSheetDate(l.data_entrada);
+            if (!stageDate) return false;
+            const daysSince = Math.floor((today - stageDate) / (1000 * 60 * 60 * 24));
+            return daysSince >= 10;
+        });
+        if (proposalsStuck.length > 0) {
+            signals.push({
+                type: 'warning',
+                icon: '📋',
+                message: `${proposalsStuck.length} proposta${proposalsStuck.length > 1 ? 's' : ''} sem fechamento há mais de 10 dias`
+            });
+        }
+
+        // Signal 5: Low conversion overall
+        if (totalLeads >= 10 && conversionRate < 5) {
+            signals.push({
+                type: 'alert',
+                icon: '📉',
+                message: `Taxa de conversão muito baixa (${conversionRate}%) com volume significativo`
+            });
+        }
+
+        // Positive signal: Good conversion
+        if (totalLeads >= 5 && conversionRate >= 20) {
+            signals.push({
+                type: 'positive',
+                icon: '🎯',
+                message: `Excelente taxa de conversão: ${conversionRate}%`
+            });
+        }
+
+        return signals;
+    };
+
+    const signals = generateSignals();
+
     const MetricCard = ({ label, value, icon: Icon, color, subtitle }) => (
         <div className="metric-card" style={{ minWidth: '180px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -319,6 +430,27 @@ export default function OwnerDashboard() {
                 customDateRange={customDateRange}
                 onCustomDateChange={setCustomDateRange}
             />
+
+            {/* Bottleneck Indicator */}
+            {bottleneck && (
+                <div style={{
+                    background: 'rgba(251, 191, 36, 0.1)',
+                    border: '1px solid rgba(251, 191, 36, 0.3)',
+                    borderRadius: '0.75rem',
+                    padding: '0.75rem 1rem',
+                    marginBottom: '1.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.9rem'
+                }}>
+                    <span style={{ fontSize: '1.1rem' }}>⚠️</span>
+                    <span>
+                        <strong>Principal gargalo do período:</strong>{' '}
+                        {bottleneck.from} → {bottleneck.to} ({bottleneck.rate}% de conversão)
+                    </span>
+                </div>
+            )}
 
             {/* Broker Performance Table */}
             <section style={{ marginBottom: '2rem' }}>
@@ -442,65 +574,62 @@ export default function OwnerDashboard() {
                 </div>
             </section>
 
-            {/* Recent Activity Summary */}
+            {/* Sinais de Atenção - Strategic Alerts */}
             <section style={{ marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Clock size={24} color="var(--primary)" />
-                    Últimas Movimentações
+                    Sinais de Atenção
                 </h2>
                 <div style={{
                     background: 'var(--bg-card)',
                     borderRadius: '1rem',
                     border: '1px solid var(--border)',
-                    padding: '1rem',
-                    maxHeight: '400px',
-                    overflowY: 'auto'
+                    padding: '1rem'
                 }}>
-                    {filteredLeads
-                        .sort((a, b) => {
-                            const dateA = parseSheetDate(a.data_mudancadeetapa) || parseSheetDate(a.data_entrada);
-                            const dateB = parseSheetDate(b.data_mudancadeetapa) || parseSheetDate(b.data_entrada);
-                            return (dateB || 0) - (dateA || 0);
-                        })
-                        .slice(0, 15)
-                        .map((lead, idx) => (
-                            <div
-                                key={idx}
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '0.75rem',
-                                    borderBottom: idx < 14 ? '1px solid var(--border)' : 'none',
-                                    gap: '1rem'
-                                }}
-                            >
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 600 }}>{lead.nome_do_lead || lead.nome || 'Lead sem nome'}</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                        {lead.corretor || 'Sem corretor'} • {lead.imovel || lead.imovel_interesse || 'Sem imóvel'}
+                    {signals.length === 0 ? (
+                        <div style={{
+                            padding: '2rem',
+                            textAlign: 'center',
+                            color: 'var(--text-muted)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            <span style={{ fontSize: '2rem' }}>✅</span>
+                            <span>Nenhum sinal de atenção no momento. Tudo sob controle!</span>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            {signals.map((signal, idx) => {
+                                const bgColor = signal.type === 'critical' ? 'rgba(239, 68, 68, 0.1)'
+                                    : signal.type === 'alert' ? 'rgba(251, 191, 36, 0.1)'
+                                        : signal.type === 'positive' ? 'rgba(34, 197, 94, 0.1)'
+                                            : 'rgba(99, 102, 241, 0.1)';
+                                const borderColor = signal.type === 'critical' ? 'rgba(239, 68, 68, 0.3)'
+                                    : signal.type === 'alert' ? 'rgba(251, 191, 36, 0.3)'
+                                        : signal.type === 'positive' ? 'rgba(34, 197, 94, 0.3)'
+                                            : 'rgba(99, 102, 241, 0.3)';
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.75rem',
+                                            padding: '0.75rem 1rem',
+                                            background: bgColor,
+                                            border: `1px solid ${borderColor}`,
+                                            borderRadius: '0.75rem',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        <span style={{ fontSize: '1.25rem' }}>{signal.icon}</span>
+                                        <span>{signal.message}</span>
                                     </div>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{
-                                        fontSize: '0.75rem',
-                                        padding: '0.25rem 0.5rem',
-                                        borderRadius: '0.5rem',
-                                        background: 'rgba(99, 102, 241, 0.2)',
-                                        color: '#6366f1',
-                                        display: 'inline-block'
-                                    }}>
-                                        {lead.etapa_atual || 'Novo Lead'}
-                                    </div>
-                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                        {lead.data_mudancadeetapa || lead.data_entrada}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    {filteredLeads.length === 0 && (
-                        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                            Nenhuma movimentação no período selecionado
+                                );
+                            })}
                         </div>
                     )}
                 </div>
