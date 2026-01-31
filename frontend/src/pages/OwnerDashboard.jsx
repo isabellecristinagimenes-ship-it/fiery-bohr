@@ -615,6 +615,7 @@ export default function OwnerDashboard() {
                                     <div style={{ fontWeight: 600 }}>{lead.nome_do_lead || lead.nome || 'Lead sem nome'}</div>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                         {lead.corretor || 'Sem corretor'} • {lead.imovel || lead.imovel_interesse || 'Sem imóvel'}
+                                        {lead.origem && <span> • {lead.origem}</span>}
                                     </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
